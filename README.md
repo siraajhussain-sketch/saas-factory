@@ -29,7 +29,14 @@ No product implementation is authorized by the presence of these documents.
 6. Automated validation and human acceptance.
 7. Separate release approval.
 
-See [Architecture](docs/ARCHITECTURE.md), [Approval Gates](docs/APPROVAL_GATES.md), and [Cost Policy](docs/COST_POLICY.md).
+## Design and implementation notes
+
+- [Factory architecture](docs/ARCHITECTURE.md)
+- [Approval gates](docs/APPROVAL_GATES.md)
+- [Approval service design](docs/APPROVAL_SERVICE_DESIGN.md)
+- [Approval control-plane threat model](docs/APPROVAL_CONTROL_PLANE_THREAT_MODEL.md)
+- [Phase 1 deterministic validator](docs/PHASE_1_CONTROL_PLANE.md)
+- [Cost policy](docs/COST_POLICY.md)
 
 ## Important limitations
 
