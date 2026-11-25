@@ -24,16 +24,16 @@
 
 ## Local usage
 
-Copy `policy.example.json` to a local, untracked `policy.json`, then explicitly configure the allowed product repository and permitted paths. Never commit signing keys or real approval records.
+Copy policy.example.json to a local, untracked policy.json, then explicitly configure the allowed product repository and permitted paths. Never commit signing keys or real approval records.
 
 Run:
 
-```bash
+~~~bash
 python -m unittest discover -s tests -v
 python -m control_plane.validator --manifest examples/sample-manifest.json --policy policy.json --root . --dry-run
-```
+~~~
 
-The sample manifest ADR digest is a placeholder and must be replaced with the actual SHA-256 digest of the referenced ADR before validation can pass.
+The sample manifest references docs/adr/001-example.md and contains its SHA-256 digest. If the ADR fixture is edited, recompute the digest in the sample manifest before running the validator.
 
 ## Security boundary
 
