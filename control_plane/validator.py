@@ -48,13 +48,17 @@ def load_json(path: str | Path) -> dict[str, Any]:
 def safe_relative_path(value: Any) -> str:
     require(isinstance(value, str) and value and not value.startswith("/"), "paths must be non-empty relative POSIX paths")
     require("\\" not in value and "\x00" not in value, "path contains an invalid character")
-    parts = value.split("/")
+    # A single trailing slash denotes an allowed directory prefix.
+    normalized = value[:-1] if value.endswith("/") else value
+    require(normalized and not normalized.endswith("/"), "path contains an empty segment")
+    parts = normalized.split("/")
     require(all(part not in ("", ".", "..") for part in parts), "path traversal or empty path segment rejected")
     require(not re.match(r"^[A-Za-z]:", value), "absolute drive paths are not permitted")
     return value
 
 def resolve_file(root: Path, relative: str) -> Path:
     relative = safe_relative_path(relative)
+    require(not relative.endswith("/"), "file path cannot end with a slash")
     base = root.resolve()
     target = (base / relative).resolve(strict=True)
     require(target.is_relative_to(base), "resolved path escapes repository root")
@@ -67,7 +71,7 @@ def parse_timestamp(value: Any, field: str) -> datetime:
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError as exc:
         raise ValidationError(f"{field} is invalid") from exc
-    require(parsed.tzinfo is not None and parsed.utcoffset() is not None, f"{field} must include a timezone")
+    require(parsed.tzinfo is not None and parsed.utcoffset() is not None, f"{field} must include timezone")
     return parsed.astimezone(timezone.utc)
 
 def validate_policy(policy: dict[str, Any]) -> None:
@@ -77,12 +81,11 @@ def validate_policy(policy: dict[str, Any]) -> None:
         require(isinstance(values, list) and all(isinstance(v, str) and v for v in values), f"{field} must be a list of non-empty strings")
         require(len(values) == len(set(values)), f"{field} contains duplicates")
     require(all(REPOSITORY.fullmatch(v) for v in policy["allowed_repositories"]), "policy contains an invalid repository name")
-    require(policy["allowed_repositories"], "repository allowlist is empty; fail closed")
-    require(policy["allowed_branches"], "branch allowlist is empty; fail closed")
-    require(policy["allowed_path_prefixes"], "path-prefix allowlist is empty; fail closed")
-    require(policy["allowed_phases"], "phase allowlist is empty; fail closed")
+    for field in ("allowed_repositories", "allowed_branches", "allowed_path_prefixes", "allowed_phases"):
+        require(policy[field], f"{field} is empty; fail closed")
     for prefix in policy["allowed_path_prefixes"]:
-        safe_relative_path(prefix.rstrip("/"))
+        require(prefix.endswith("/") and len(prefix) > 1, "path prefixes must be directory prefixes ending in /")
+        safe_relative_path(prefix)
 
 def validate_manifest(manifest: dict[str, Any], policy: dict[str, Any]) -> None:
     keys(manifest, {

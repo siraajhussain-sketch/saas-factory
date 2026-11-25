@@ -5,14 +5,10 @@
   "repository": "example-owner/example-product",
   "default_branch": "main",
   "adr_path": "docs/adr/001-example.md",
-  "adr_sha256": "REPLACE_WITH_SHA256_OF_THE_ADR_FILE",
+  "adr_sha256": "7ebbdf5b280c7c1fb843dbd0a5273a20c558cd40edd39464b5e156e2724ee100",
   "requested_phase": "foundation",
   "requested_paths": ["src/", "tests/"],
-  "provider_policy": {
-    "enabled": false,
-    "allowlist": [],
-    "max_spend_usd": 0
-  },
+  "provider_policy": {"enabled": false, "allowlist": [], "max_spend_usd": 0},
   "environment": "none",
   "intent": "dry-run"
 }
