@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "product_id": "sample-product",
+  "product_name": "Sample Product",
+  "repository": "example-owner/example-product",
+  "default_branch": "main",
+  "adr_path": "docs/adr/001-example.md",
+  "adr_sha256": "REPLACE_WITH_SHA256_OF_THE_ADR_FILE",
+  "requested_phase": "foundation",
+  "requested_paths": ["src/", "tests/"],
+  "provider_policy": {
+    "enabled": false,
+    "allowlist": [],
+    "max_spend_usd": 0
+  },
+  "environment": "none",
+  "intent": "dry-run"
+}

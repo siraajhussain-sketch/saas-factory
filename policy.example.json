@@ -1,0 +1,6 @@
+{
+  "allowed_repositories": [],
+  "allowed_branches": ["main"],
+  "allowed_path_prefixes": ["src/", "tests/", "docs/", "products/"],
+  "allowed_phases": ["discovery", "architecture", "foundation", "feature", "validation"]
+}
