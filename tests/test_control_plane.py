@@ -1,7 +1,6 @@
 import copy
 import hashlib
 import hmac
-import json
 import os
 import tempfile
 import unittest
@@ -152,13 +151,14 @@ class ValidatorTests(unittest.TestCase):
         self.assertEqual(plan["spend_usd"], 0)
 
     def test_missing_verification_key_rejected(self):
+        approval = make_approval()
         with patch.dict(os.environ, {}, clear=True):
             with self.assertRaisesRegex(ValidationError, "key unavailable"):
-                verify_approval(make_approval(), MANIFEST, POLICY, NOW)
+                verify_approval(approval, MANIFEST, POLICY, NOW)
 
     def test_tampered_signature_rejected(self):
         approval = make_approval()
-        approval["phase"] = "feature"
+        approval["signature"] = "0" * 64
         with patch.dict(os.environ, {"FACTORY_APPROVAL_HMAC_KEY": KEY}):
             with self.assertRaisesRegex(ValidationError, "signature"):
                 verify_approval(approval, MANIFEST, POLICY, NOW)
