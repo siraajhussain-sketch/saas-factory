@@ -35,6 +35,7 @@ No product implementation is authorized by the presence of these documents.
 - [Approval gates](docs/APPROVAL_GATES.md)
 - [Approval service design](docs/APPROVAL_SERVICE_DESIGN.md)
 - [Approval control-plane threat model](docs/APPROVAL_CONTROL_PLANE_THREAT_MODEL.md)
+- [Approval infrastructure options](docs/APPROVAL_INFRASTRUCTURE_OPTIONS.md)
 - [Phase 1 deterministic validator](docs/PHASE_1_CONTROL_PLANE.md)
 - [Cost policy](docs/COST_POLICY.md)
 
