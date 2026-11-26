@@ -270,7 +270,7 @@ class ApprovalScopeV2Tests(unittest.TestCase):
         changed_plan["steps"][0]["expected_outputs"] = ["src/report.py"]
         changed_manifest["phase_plan_sha256"] = hashlib.sha256(canonical_jcs(changed_plan)).hexdigest()
         path.write_bytes(canonical_jcs(changed_plan))
-        result = self.run_plan(changed_manifest)
+        result = self.run_plan(changed_manifest, make_approval(changed_manifest))
         self.assertEqual(result["status"], "PLAN_ONLY_APPROVAL_VALIDATED")
 
     def test_approval_not_before_cannot_be_in_the_future(self):
