@@ -6,7 +6,7 @@ The factory is a control plane. Each product has its own architecture, ownership
 
 ## Current status
 
-This repository contains governance, design documents, a deterministic read-only validator and a read-only Phase 2 package completeness checker. It is not an autonomous build system and does not provision products, call paid AI providers, create cloud resources, handle production credentials or deploy applications.
+This repository contains governance, design documents, deterministic read-only validators and a no-network mock for the optional AI discovery boundary. It is not an autonomous build system and does not provision products, call paid AI providers, create cloud resources, handle production credentials or deploy applications.
 
 ## Core principles
 
@@ -39,10 +39,11 @@ This repository contains governance, design documents, a deterministic read-only
 - [Phase 2 discovery and architecture package](docs/PHASE_2_READ_ONLY_DISCOVERY.md)
 - [Phase 2 package validator](docs/PHASE_2_PACKAGE_VALIDATOR.md)
 - [AI-assisted discovery design](docs/AI_ASSISTED_DISCOVERY_DESIGN.md)
+- [AI output contract and no-network mock](docs/AI_OUTPUT_CONTRACT.md)
 
 ## Important limitations
 
-Documentation and passing tests do not establish production readiness. Each product requires independent security, privacy, legal, reliability, cost and operational review.
+The AI output validator checks structure and exact source-span traceability only; it does not verify factual truth, source quality or interpretation. Mock output is fixed fixture data, not model inference. Documentation and passing tests do not establish production readiness. Each product requires independent security, privacy, legal, reliability, cost and operational review.
 
 ## Repository boundaries
 
