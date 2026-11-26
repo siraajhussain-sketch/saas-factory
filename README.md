@@ -30,6 +30,7 @@ This repository contains governance, design documents, deterministic read-only v
 ## Design and implementation notes
 
 - [Factory architecture](docs/ARCHITECTURE.md)
+- [Factory lifecycle audit (2026-11-26)](docs/FACTORY_LIFECYCLE_AUDIT_2026-11.md)
 - [Approval gates](docs/APPROVAL_GATES.md)
 - [Approval service design](docs/APPROVAL_SERVICE_DESIGN.md)
 - [Approval infrastructure options](docs/APPROVAL_INFRASTRUCTURE_OPTIONS.md)
