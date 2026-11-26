@@ -24,16 +24,13 @@ REQUIRED_HEADINGS = [
     "10. Risks and open questions",
     "11. Acceptance criteria",
 ]
-HEADING = re.compile(r"^#{1,6}\\s+(.+?)\\s*$")
+HEADING = re.compile(r"^#{1,6}\s+(.+?)\s*$")
 INSTRUCTIONAL_TEXT = re.compile(
     r"(?i)(describe the product|describe the painful job|list the smallest set|"
     r"list assumptions that require|define measurable outcomes|"
-    r"\\[insert[^\\]]*\\]|\\[to be completed\\]|\\bTODO\\b|\\bTBD\\b)"
+    r"\[insert[^\]]*\]|\[to be completed\]|\bTODO\b|\bTBD\b)"
 )
-BLANK_FIELD = re.compile(r"^\\s*(?:-\\s*)?(?:\\*\\*)?([A-Za-z][A-Za-z /()_-]*?)(?:\\*\\*)?:\\s*(?:\\*\\*)?\\s*$")
-UNKNOWN_VALUES = {"unknown", "not applicable", "n/a", "none", "deferred"}
-
-
+BLANK_FIELD = re.compile(r"^\s*(?:-\s*)?(?:\*\*)?([A-Za-z][A-Za-z /()_-]*?)(?:\*\*)?:\s*(?:\*\*)?\s*$")
 class BriefValidationError(ValueError):
     """Raised when an intake brief is structurally incomplete."""
 
