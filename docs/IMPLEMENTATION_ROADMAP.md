@@ -55,6 +55,14 @@ This roadmap is a proposal. Completing a phase requires review and explicit appr
 - Document benchmark limitations and human-review requirements.
 - No model invocation, provider credentials, network access or product repository writes.
 
+## Phase 2E — Read-only lifecycle manifest
+- Versioned JSON case record linking artifacts, validator-run records, human review notes and lifecycle history.
+- Root-confined artifact paths and SHA-256 integrity checks.
+- Strict identifiers, references, timestamps and permitted state sequence.
+- Human decisions remain unauthenticated records; lifecycle state never grants authority.
+- Standard-library tests and mandatory dry-run CLI.
+- No database, network, provider, executor, product repository writes or spending.
+
 ## Deferred — Expanded multilingual benchmark (before model selection)
 
 This is intentionally backlog work, not a current implementation phase. The version 1.1 synthetic dataset is only a smoke-test baseline and must not be used to claim production-grade Arabic or Urdu quality.
