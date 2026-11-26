@@ -8,6 +8,8 @@ The factory is a control plane. Each product has its own architecture, ownership
 
 This repository contains governance, design documents, deterministic read-only validators and a no-network mock for the optional AI discovery boundary. It is not an autonomous build system and does not provision products, call paid AI providers, create cloud resources, handle production credentials or deploy applications.
 
+The independent control-plane security audit identified critical approval-identity and replay/revocation gaps. The factory must remain read-only; implementation automation is blocked pending remediation and independent review. See the [Independent Security Audit](docs/INDEPENDENT_SECURITY_AUDIT_2026-11-26.md).
+
 ## Core principles
 
 - Product-specific architecture; no universal tenant model.
@@ -31,6 +33,8 @@ This repository contains governance, design documents, deterministic read-only v
 
 - [Factory architecture](docs/ARCHITECTURE.md)
 - [Factory lifecycle audit (2026-11-26)](docs/FACTORY_LIFECYCLE_AUDIT_2026-11.md)
+- [Independent security audit (2026-11-26)](docs/INDEPENDENT_SECURITY_AUDIT_2026-11-26.md)
+- [Implementation roadmap](docs/IMPLEMENTATION_ROADMAP.md)
 - [Lifecycle manifest and state contract](docs/LIFECYCLE_MANIFEST.md)
 - [Product case consistency checker](docs/CASE_CONSISTENCY_CHECKER.md)
 - [Synthetic end-to-end product case walkthrough](docs/SYNTHETIC_END_TO_END_WALKTHROUGH.md)
