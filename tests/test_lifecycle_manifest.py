@@ -7,16 +7,10 @@ class LifecycleManifestTests(unittest.TestCase):
   self.temp=tempfile.TemporaryDirectory(); self.root=Path(self.temp.name)
   (self.root/"brief.md").write_text("# Product brief\n",encoding="utf-8")
   digest=hashlib.sha256((self.root/"brief.md").read_bytes()).hexdigest()
-  self.manifest={"schema_version":"1.0","case_id":"case-demo-001","product_id":"product-demo","lifecycle_state":"INTAKE",
-   "created_at":"2026-11-26T10:00:00Z","updated_at":"2026-11-26T10:00:00Z",
-   "artifacts":[{"id":"brief-v1","kind":"product_brief","path":"brief.md","sha256":digest}],
-   "validator_runs":[{"id":"brief-check-1","validator":"product_brief_validator","status":"passed","recorded_at":"2026-11-26T10:01:00Z","artifact_ids":["brief-v1"]}],
-   "human_reviews":[{"id":"review-1","stage":"intake","reviewer_label":"Owner (recorded label)","decision":"not_reviewed","recorded_at":"2026-11-26T10:02:00Z","notes":"No review has been performed."}],
-   "state_history":[{"from":None,"to":"INTAKE","recorded_at":"2026-11-26T10:00:00Z","reason":"Case created"}]}
+  self.manifest={"schema_version":"1.0","case_id":"case-demo-001","product_id":"product-demo","lifecycle_state":"INTAKE","created_at":"2026-11-26T10:00:00Z","updated_at":"2026-11-26T10:00:00Z","artifacts":[{"id":"brief-v1","kind":"product_brief","path":"brief.md","sha256":digest}],"validator_runs":[{"id":"brief-check-1","validator":"product_brief_validator","status":"passed","recorded_at":"2026-11-26T10:01:00Z","artifact_ids":["brief-v1"]}],"human_reviews":[{"id":"review-1","stage":"intake","reviewer_label":"Owner (recorded label)","decision":"not_reviewed","recorded_at":"2026-11-26T10:02:00Z","notes":"No review has been performed."}],"state_history":[{"from":None,"to":"INTAKE","recorded_at":"2026-11-26T10:00:00Z","reason":"Case created"}]}
  def tearDown(self): self.temp.cleanup()
  def test_valid_manifest_passes_without_authorizing(self):
-  result=validate_manifest(self.manifest,self.root)
-  self.assertEqual(result["status"],"STRUCTURALLY_VALID_FOR_HUMAN_REVIEW"); self.assertFalse(result["authorization_granted"]); self.assertFalse(result["side_effects"])
+  result=validate_manifest(self.manifest,self.root); self.assertEqual(result["status"],"STRUCTURALLY_VALID_FOR_HUMAN_REVIEW"); self.assertFalse(result["authorization_granted"]); self.assertFalse(result["side_effects"])
  def test_hash_mismatch_blocks(self):
   self.manifest["artifacts"][0]["sha256"]="0"*64
   with self.assertRaisesRegex(ManifestValidationError,"SHA-256 mismatch"): validate_manifest(self.manifest,self.root)
@@ -35,16 +29,20 @@ class LifecycleManifestTests(unittest.TestCase):
  def test_unknown_artifact_reference_blocks(self):
   self.manifest["validator_runs"][0]["artifact_ids"]=["not-here"]
   with self.assertRaisesRegex(ManifestValidationError,"unknown artifact"): validate_manifest(self.manifest,self.root)
+ def test_non_string_artifact_reference_blocks_cleanly(self):
+  self.manifest["validator_runs"][0]["artifact_ids"]=[{}]
+  with self.assertRaisesRegex(ManifestValidationError,"must be strings"): validate_manifest(self.manifest,self.root)
  def test_invalid_state_transition_blocks(self):
-  self.manifest["lifecycle_state"]="IMPLEMENTATION"
-  self.manifest["state_history"].append({"from":"INTAKE","to":"IMPLEMENTATION","recorded_at":"2026-11-26T10:03:00Z","reason":"Skip stages"})
+  self.manifest["lifecycle_state"]="IMPLEMENTATION"; self.manifest["state_history"].append({"from":"INTAKE","to":"IMPLEMENTATION","recorded_at":"2026-11-26T10:03:00Z","reason":"Skip stages"})
   with self.assertRaisesRegex(ManifestValidationError,"transition is not allowed"): validate_manifest(self.manifest,self.root)
  def test_state_must_match_history(self):
   self.manifest["lifecycle_state"]="DISCOVERY"
   with self.assertRaisesRegex(ManifestValidationError,"does not match state_history"): validate_manifest(self.manifest,self.root)
+ def test_close_from_active_state_is_recordable(self):
+  self.manifest["lifecycle_state"]="CLOSED"; self.manifest["state_history"].append({"from":"INTAKE","to":"CLOSED","recorded_at":"2026-11-26T10:03:00Z","reason":"Case closed by owner"})
+  self.assertEqual(validate_manifest(self.manifest,self.root)["lifecycle_state"],"CLOSED")
  def test_review_record_does_not_authorize(self):
-  self.manifest["human_reviews"][0]["decision"]="accepted"
-  result=validate_manifest(self.manifest,self.root)
+  self.manifest["human_reviews"][0]["decision"]="accepted"; result=validate_manifest(self.manifest,self.root)
   self.assertFalse(result["authorization_granted"]); self.assertIn("not authenticated",result["limitations"][0])
  def test_naive_timestamp_blocks(self):
   self.manifest["updated_at"]="2026-11-26T10:00:00"
