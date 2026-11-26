@@ -1,16 +1,34 @@
 {
   "schema_version": "1.0",
-  "case_id": "sample-case-001",
-  "product_id": "sample-product",
+  "case_id": "workshop-queue-demo-001",
+  "product_id": "workshop-queue-demo",
   "lifecycle_state": "INTAKE",
   "created_at": "2026-11-26T10:00:00Z",
   "updated_at": "2026-11-26T10:00:00Z",
   "artifacts": [
     {
-      "id": "brief-v1",
+      "id": "workshop-queue-brief-v1",
       "kind": "product_brief",
-      "path": "sample-brief.md",
-      "sha256": "7084ea699017c685edd87fb343db194d4be9b22abe16cd69a5da83070e79813c"
+      "path": "workshop-queue/product-brief.md",
+      "sha256": "d28879d30c3f261145ff9e791e56c627a61ad4d9ca831eac043f546bdc0f7cc0"
+    },
+    {
+      "id": "workshop-queue-discovery-v1",
+      "kind": "discovery_report",
+      "path": "workshop-queue/discovery-report.md",
+      "sha256": "ea774472dfafde5e6318808a3f61249048e1f94b0c73eea6e915702149dee0d0"
+    },
+    {
+      "id": "workshop-queue-architecture-v1",
+      "kind": "architecture_package",
+      "path": "workshop-queue/architecture-package.md",
+      "sha256": "9b88f07e0d27cf31f6bb532bb0bb0697feee1401c2a9d25c6651f0f771a181c3"
+    },
+    {
+      "id": "workshop-queue-evidence-v1",
+      "kind": "evidence_register",
+      "path": "workshop-queue/evidence-register.md",
+      "sha256": "fb4d46b297ff1cfd77cd5eb1bf56a88a8725bc60464c510b507df4d84f804e28"
     }
   ],
   "validator_runs": [],
@@ -20,7 +38,7 @@
       "from": null,
       "to": "INTAKE",
       "recorded_at": "2026-11-26T10:00:00Z",
-      "reason": "Synthetic example case created"
+      "reason": "Synthetic Workshop Queue example case created"
     }
   ]
 }
