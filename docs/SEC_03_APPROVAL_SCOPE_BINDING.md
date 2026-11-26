@@ -1,6 +1,6 @@
 # SEC-03 — Approval Scope Binding Contract
 
-**Status:** Version-2 local validator prototype implemented; 138 standard-library tests pass in GitHub Actions run [45821136897](https://github.com/siraajhussain-sketch/saas-factory/actions/runs/45821136897). Independent security review remains pending. This is not a production approval service and does not authorize execution.
+**Status:** Version-2 local validator prototype implemented; 138 standard-library tests pass in GitHub Actions run [45821430788](https://github.com/siraajhussain-sketch/saas-factory/actions/runs/45821430788). Independent security review remains pending. This is not a production approval service and does not authorize execution.
 
 ## 1. Security objective
 
@@ -52,9 +52,9 @@ A commit SHA pins Git content identity, but it does not authenticate who approve
 The phase plan must be a separate, versioned JSON artifact. It must contain at least:
 - product ID, repository identity and pinned commit SHA;
 - phase ID and phase-plan schema version;
-- ordered implementation/validation steps;
+- ordered implementation/validation steps, each with a stable step ID, one explicitly allowlisted action, description, prior-step dependencies and expected output paths;
 - exact acceptance criteria for each step;
-- exact expected output paths and permitted changed paths;
+- exact expected output paths, confined to the permitted changed paths;
 - dependencies and preconditions;
 - operation class and allowed action set;
 - environment, provider and spend constraints.
@@ -153,7 +153,7 @@ Implemented and tested:
 - canonical SHA-256 digest verification for the phase plan;
 - a restricted RFC 8785-compatible canonical JSON profile that accepts strings, booleans, null, arrays, objects and safe-range integers, and deliberately rejects floats and integers outside the IEEE-754 safe range;
 - UTF-16 code-unit object-key ordering, UTF-8 encoding and canonicalization regression vectors;
-- exact operation-class registry version and read-only action allowlist; all non-read-only classes remain blocked;
+- exact operation-class registry version and read-only action allowlist; every phase-plan step must name one action from that allowlist, and expected output paths must remain inside permitted paths; all non-read-only classes remain blocked;
 - exact path scope, case-fold collision checks, expected-output confinement and cross-field consistency;
 - HMAC signature verification over the complete v2 approval payload;
 - plan-only output explicitly marked `DECLARED_ONLY_NOT_CHECKED_OUT`.
