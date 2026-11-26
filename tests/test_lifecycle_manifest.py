@@ -7,7 +7,7 @@ class LifecycleManifestTests(unittest.TestCase):
   self.temp=tempfile.TemporaryDirectory(); self.root=Path(self.temp.name)
   (self.root/"brief.md").write_text("# Product brief\n",encoding="utf-8")
   digest=hashlib.sha256((self.root/"brief.md").read_bytes()).hexdigest()
-  self.manifest={"schema_version":"1.0","case_id":"case-demo-001","product_id":"product-demo","lifecycle_state":"INTAKE","created_at":"2026-11-26T10:00:00Z","updated_at":"2026-11-26T10:02:00Z","artifacts":[{"id":"brief-v1","kind":"product_brief","path":"brief.md","sha256":digest}],"validator_runs":[{"id":"brief-check-1","validator":"product_brief_validator","status":"passed","recorded_at":"2026-11-26T10:01:00Z","artifact_ids":["brief-v1"]}],"human_reviews":[{"id":"review-1","stage":"intake","reviewer_label":"Owner (recorded label)","decision":"not_reviewed","recorded_at":"2026-11-26T10:02:00Z","notes":"No review has been performed."}],"state_history":[{"from":None,"to":"INTAKE","recorded_at":"2026-11-26T10:00:00Z","reason":"Case created"}]}
+  self.manifest={"schema_version":"1.0","case_id":"case-demo-001","product_id":"product-demo","lifecycle_state":"INTAKE","created_at":"2026-11-26T10:00:00Z","updated_at":"2026-11-26T10:03:00Z","artifacts":[{"id":"brief-v1","kind":"product_brief","path":"brief.md","sha256":digest}],"validator_runs":[{"id":"brief-check-1","validator":"product_brief_validator","status":"passed","recorded_at":"2026-11-26T10:01:00Z","artifact_ids":["brief-v1"]}],"human_reviews":[{"id":"review-1","stage":"intake","reviewer_label":"Owner (recorded label)","decision":"not_reviewed","recorded_at":"2026-11-26T10:02:00Z","notes":"No review has been performed."}],"state_history":[{"from":None,"to":"INTAKE","recorded_at":"2026-11-26T10:01:00Z","reason":"Case created"}]}
  def tearDown(self): self.temp.cleanup()
  def test_valid_manifest_passes_without_authorizing(self):
   result=validate_manifest(self.manifest,self.root); self.assertEqual(result["status"],"STRUCTURALLY_VALID_FOR_HUMAN_REVIEW"); self.assertFalse(result["authorization_granted"]); self.assertFalse(result["side_effects"])
@@ -58,7 +58,7 @@ class LifecycleManifestTests(unittest.TestCase):
   with self.assertRaisesRegex(ManifestValidationError,"must not precede"): validate_manifest(self.manifest,self.root)
  def test_state_history_timestamps_must_be_chronological(self):
   self.manifest["lifecycle_state"]="DISCOVERY"
-  self.manifest["state_history"].append({"from":"INTAKE","to":"DISCOVERY","recorded_at":"2026-11-26T09:59:00Z","reason":"Out of order"})
+  self.manifest["state_history"].append({"from":"INTAKE","to":"DISCOVERY","recorded_at":"2026-11-26T10:00:30Z","reason":"Out of order"})
   with self.assertRaisesRegex(ManifestValidationError,"events must be chronological"): validate_manifest(self.manifest,self.root)
  def test_validator_and_review_timestamps_must_fit_case_window(self):
   self.manifest["validator_runs"][0]["recorded_at"]="2026-11-26T10:03:00Z"
