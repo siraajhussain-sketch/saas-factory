@@ -33,6 +33,7 @@ This repository contains governance, design documents, deterministic read-only v
 - [Factory lifecycle audit (2026-11-26)](docs/FACTORY_LIFECYCLE_AUDIT_2026-11.md)
 - [Lifecycle manifest and state contract](docs/LIFECYCLE_MANIFEST.md)
 - [Product case consistency checker](docs/CASE_CONSISTENCY_CHECKER.md)
+- [Synthetic end-to-end product case walkthrough](docs/SYNTHETIC_END_TO_END_WALKTHROUGH.md)
 - [Approval gates](docs/APPROVAL_GATES.md)
 - [Approval service design](docs/APPROVAL_SERVICE_DESIGN.md)
 - [Approval infrastructure options](docs/APPROVAL_INFRASTRUCTURE_OPTIONS.md)
