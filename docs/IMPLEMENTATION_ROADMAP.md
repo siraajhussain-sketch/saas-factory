@@ -41,6 +41,12 @@ This roadmap is a proposal. Completing a phase requires review and explicit appr
 - Adversarial, malformed, oversized and provenance-failure tests.
 - No provider selected, credentials, external prompt submission, spending or product repository writes.
 
+## Phase 2C — NLP evaluation baseline
+- Small, synthetic, versioned evaluation dataset.
+- Read-only scoring for schema validity, missing/extra findings, category accuracy, provenance and lexical coverage.
+- Document benchmark limitations and human-review requirements.
+- No model invocation, provider credentials, network access or product repository writes.
+
 ## Phase 3 — Isolated product repository setup
 - Explicit repository and visibility approval.
 - Approved starter and baseline security controls.
