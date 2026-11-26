@@ -122,7 +122,7 @@ class CaseConsistencyTests(unittest.TestCase):
             "product_id": "product-example",
             "lifecycle_state": "INTAKE",
             "created_at": "2026-11-26T10:00:00Z",
-            "updated_at": "2026-11-26T10:00:00Z",
+            "updated_at": "2026-11-26T10:02:00Z",
             "artifacts": artifacts,
             "validator_runs": [],
             "human_reviews": [],
