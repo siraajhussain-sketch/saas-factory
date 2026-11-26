@@ -8,7 +8,7 @@ The factory is a control plane. Each product has its own architecture, ownership
 
 This repository contains governance, design documents, deterministic read-only validators and a no-network mock for the optional AI discovery boundary. It is not an autonomous build system and does not provision products, call paid AI providers, create cloud resources, handle production credentials or deploy applications.
 
-The independent control-plane security audit identified critical approval-identity and replay/revocation gaps. The SEC-06 artifact snapshot consistency and SEC-07 schema/chronology findings have since been remediated and covered by passing CI (113 tests), pending independent re-audit. A design-only SEC-03 approval-scope contract has been drafted; the validator remains unchanged and SEC-03 is not yet remediated. Critical approval identity/replay gaps and other authorization findings remain open. The factory must remain read-only; implementation automation is blocked pending remediation and independent review. See the [Independent Security Audit](docs/INDEPENDENT_SECURITY_AUDIT_2026-11-26.md), [SEC-03 Approval Scope Binding Contract](docs/SEC_03_APPROVAL_SCOPE_BINDING.md) and [Implementation Roadmap](docs/IMPLEMENTATION_ROADMAP.md).
+The independent control-plane security audit identified critical approval-identity and replay/revocation gaps. The SEC-06 artifact snapshot consistency and SEC-07 schema/chronology findings have since been remediated and covered by passing CI (113 tests), pending independent re-audit. A version-2 SEC-03 approval-scope validator prototype now binds declared commit SHA, canonical phase-plan digest, operation class, exact actions and paths; CI passed 138 tests. It does not verify actual checkout HEAD, authenticate the approver or prevent replay, so SEC-03 remains pending independent review and execution remains blocked. Critical approval identity/replay gaps and other authorization findings remain open. The factory must remain read-only; implementation automation is blocked pending remediation and independent review. See the [Independent Security Audit](docs/INDEPENDENT_SECURITY_AUDIT_2026-11-26.md), [SEC-03 Approval Scope Binding Contract](docs/SEC_03_APPROVAL_SCOPE_BINDING.md) and [Implementation Roadmap](docs/IMPLEMENTATION_ROADMAP.md).
 
 ## Core principles
 
@@ -40,7 +40,7 @@ The independent control-plane security audit identified critical approval-identi
 - [Synthetic end-to-end product case walkthrough](docs/SYNTHETIC_END_TO_END_WALKTHROUGH.md)
 - [Human review checklist](docs/HUMAN_REVIEW_CHECKLIST.md)
 - [Review findings and remediation tracker](docs/REVIEW_FINDINGS_AND_REMEDIATION.md)
-- [Approval gates](docs/APPROVAL_GATES.md)
+- [Approval gates](docs/APPROVAL_GATES.md)\n- [SEC-03 approval scope binding contract](docs/SEC_03_APPROVAL_SCOPE_BINDING.md)
 - [Approval service design](docs/APPROVAL_SERVICE_DESIGN.md)
 - [Approval infrastructure options](docs/APPROVAL_INFRASTRUCTURE_OPTIONS.md)
 - [Current zero-cost feasibility decision](docs/APPROVAL_ZERO_COST_FEASIBILITY_2026-11.md)
