@@ -1,6 +1,7 @@
 import copy
 import hashlib
 import hmac
+import json
 import os
 import tempfile
 import unittest
@@ -9,8 +10,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 from control_plane.validator import (
-    ValidationError, build_plan, canonical_approval, redact,
-    validate_manifest, verify_approval,
+    ValidationError, build_plan, canonical_approval, load_json, redact,
+    safe_relative_path, validate_manifest, verify_approval,
 )
 
 KEY = "unit-test-key-with-at-least-thirty-two-bytes-long"
@@ -54,7 +55,7 @@ def make_approval(**changes):
         "issued_at": "2026-11-25T11:00:00Z",
         "expires_at": "2026-11-26T11:00:00Z",
         "revoked": False,
-        "nonce": "nonce-unique-001",
+        "nonce": "a" * 64,
     }
     value.update(changes)
     with patch.dict(os.environ, {"FACTORY_APPROVAL_HMAC_KEY": KEY}):
@@ -204,6 +205,65 @@ class ValidatorTests(unittest.TestCase):
         with patch.dict(os.environ, {"FACTORY_APPROVAL_HMAC_KEY": KEY}):
             with self.assertRaises(ValidationError):
                 verify_approval(approval, MANIFEST, POLICY, NOW)
+
+    def test_duplicate_json_object_keys_rejected(self):
+        path = self.root / "duplicate.json"
+        path.write_text('{"role":"user","role":"admin"}', encoding="utf-8")
+        with self.assertRaisesRegex(ValidationError, "duplicate JSON object key"):
+            load_json(path)
+
+    def test_non_standard_json_numbers_rejected(self):
+        for token in ("NaN", "Infinity", "-Infinity"):
+            with self.subTest(token=token):
+                path = self.root / "nonstandard.json"
+                path.write_text('{"amount":' + token + '}', encoding="utf-8")
+                with self.assertRaisesRegex(ValidationError, "non-standard JSON constant"):
+                    load_json(path)
+
+    def test_non_object_json_root_rejected(self):
+        path = self.root / "array.json"
+        path.write_text('[]', encoding="utf-8")
+        with self.assertRaisesRegex(ValidationError, "top-level"):
+            load_json(path)
+
+    def test_path_control_and_format_characters_rejected(self):
+        for value in ("src/bad\nname", "src/\u202ename", "src/name\u200b"):
+            with self.subTest(value=value):
+                with self.assertRaises(ValidationError):
+                    safe_relative_path(value)
+
+    def test_non_nfc_path_rejected(self):
+        with self.assertRaisesRegex(ValidationError, "NFC"):
+            safe_relative_path("docs/cafe\u0301.txt")
+
+    def test_windows_ambiguous_path_segments_rejected(self):
+        for value in ("src/file.txt:stream", "src/name.", "src/name "):
+            with self.subTest(value=value):
+                with self.assertRaises(ValidationError):
+                    safe_relative_path(value)
+
+    def test_symlink_escape_rejected(self):
+        outside = self.root.parent / (self.root.name + "-outside.txt")
+        outside.write_text("outside", encoding="utf-8")
+        link = self.root / "docs" / "adr" / "escape.md"
+        try:
+            link.symlink_to(outside)
+            manifest = copy.deepcopy(MANIFEST)
+            manifest["adr_path"] = "docs/adr/escape.md"
+            manifest["adr_sha256"] = hashlib.sha256(b"outside").hexdigest()
+            with self.assertRaisesRegex(ValidationError, "escapes repository root"):
+                build_plan(manifest, POLICY, self.root)
+        finally:
+            link.unlink(missing_ok=True)
+            outside.unlink(missing_ok=True)
+
+    def test_short_or_non_hex_nonce_rejected(self):
+        for nonce in ("nonce-unique-001", "A" * 64, "g" * 64):
+            with self.subTest(nonce=nonce):
+                approval = make_approval(nonce=nonce)
+                with patch.dict(os.environ, {"FACTORY_APPROVAL_HMAC_KEY": KEY}):
+                    with self.assertRaisesRegex(ValidationError, "nonce must be 64"):
+                        verify_approval(approval, MANIFEST, POLICY, NOW)
 
     def test_redaction(self):
         result = redact({"api_key": "secret-value", "note": "ghp_abcdefghijklmnopqrstuv"})

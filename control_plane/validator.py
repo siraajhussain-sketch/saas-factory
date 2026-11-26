@@ -12,6 +12,7 @@ import json
 import os
 import re
 import sys
+import unicodedata
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -19,6 +20,7 @@ from typing import Any
 SAFE_ID = re.compile(r"^[a-z0-9][a-z0-9_-]{1,62}$")
 SHA256 = re.compile(r"^[a-f0-9]{64}$")
 SIGNATURE = re.compile(r"^[a-f0-9]{64}$")
+NONCE = re.compile(r"^[a-f0-9]{64}$")
 REPOSITORY = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 SECRET_KEY = re.compile(r"(secret|token|password|api[_-]?key|authorization|private[_-]?key|signature)", re.I)
 SECRET_VALUE = re.compile(r"(?i)(gh[pousr]_[A-Za-z0-9_]{12,}|AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9_-]{12,}|-----BEGIN [A-Z ]*PRIVATE KEY-----)")
@@ -37,22 +39,44 @@ def keys(obj: dict[str, Any], required: set[str], optional: set[str] = frozenset
     require(not missing, f"missing fields: {', '.join(sorted(missing))}")
     require(not unknown, f"unknown fields: {', '.join(sorted(unknown))}")
 
+def _unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("duplicate JSON object key rejected")
+        result[key] = value
+    return result
+
+def _reject_constant(value: str) -> None:
+    raise ValueError(f"non-standard JSON constant rejected: {value}")
+
 def load_json(path: str | Path) -> dict[str, Any]:
     try:
-        value = json.loads(Path(path).read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-        raise ValidationError(f"cannot read valid JSON input ({type(exc).__name__})") from exc
+        value = json.loads(
+            Path(path).read_text(encoding="utf-8"),
+            object_pairs_hook=_unique_object,
+            parse_constant=_reject_constant,
+        )
+    except (OSError, UnicodeError, ValueError) as exc:
+        detail = str(exc)
+        if len(detail) > 100:
+            detail = detail[:100]
+        raise ValidationError(f"cannot read valid JSON input ({type(exc).__name__}: {detail})") from exc
     require(isinstance(value, dict), "top-level JSON value must be an object")
     return value
 
 def safe_relative_path(value: Any) -> str:
     require(isinstance(value, str) and value and not value.startswith("/"), "paths must be non-empty relative POSIX paths")
     require("\\" not in value and "\x00" not in value, "path contains an invalid character")
+    require(unicodedata.normalize("NFC", value) == value, "path must use Unicode NFC normalization")
+    require(not any(unicodedata.category(char) in ("Cc", "Cf") for char in value), "path contains a control or formatting character")
+    require(not any(char in value for char in (":",)), "path contains a platform-specific separator or stream marker")
     # A single trailing slash denotes an allowed directory prefix.
     normalized = value[:-1] if value.endswith("/") else value
     require(normalized and not normalized.endswith("/"), "path contains an empty segment")
     parts = normalized.split("/")
     require(all(part not in ("", ".", "..") for part in parts), "path traversal or empty path segment rejected")
+    require(all(not part.endswith((".", " ")) for part in parts), "path segment has a platform-ambiguous suffix")
     require(not re.match(r"^[A-Za-z]:", value), "absolute drive paths are not permitted")
     return value
 
@@ -123,7 +147,7 @@ def verify_adr(manifest: dict[str, Any], root: Path) -> None:
 
 def canonical_approval(approval: dict[str, Any]) -> bytes:
     unsigned = {k: v for k, v in approval.items() if k != "signature"}
-    return json.dumps(unsigned, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    return json.dumps(unsigned, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False).encode("utf-8")
 
 def verify_approval(approval: dict[str, Any], manifest: dict[str, Any], policy: dict[str, Any], now: datetime | None = None) -> None:
     keys(approval, {
@@ -133,7 +157,7 @@ def verify_approval(approval: dict[str, Any], manifest: dict[str, Any], policy: 
     })
     require(approval["schema_version"] == "1.0", "unsupported approval schema_version")
     require(isinstance(approval["approval_id"], str) and SAFE_ID.fullmatch(approval["approval_id"]), "invalid approval_id")
-    require(isinstance(approval["nonce"], str) and SAFE_ID.fullmatch(approval["nonce"]), "invalid approval nonce")
+    require(isinstance(approval["nonce"], str) and NONCE.fullmatch(approval["nonce"]), "nonce must be 64 lowercase hexadecimal characters generated from a cryptographically secure random source")
     for field, expected in (("product_id", manifest["product_id"]), ("repository", manifest["repository"]), ("adr_sha256", manifest["adr_sha256"]), ("phase", manifest["requested_phase"]), ("branch", manifest["default_branch"])):
         require(approval[field] == expected, f"approval mismatch: {field}")
     permitted = approval["permitted_paths"]

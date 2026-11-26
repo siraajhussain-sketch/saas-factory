@@ -38,6 +38,7 @@ No product implementation is authorized by the presence of these documents.
 - [Approval infrastructure options](docs/APPROVAL_INFRASTRUCTURE_OPTIONS.md)
 - [Phase 1 deterministic validator](docs/PHASE_1_CONTROL_PLANE.md)
 - [Phase 1 validator security gap review](docs/PHASE_1_SECURITY_GAP_REVIEW.md)
+- [Phase 1.1 strict input hardening](docs/PHASE_1_1_STRICT_INPUT_HARDENING.md)
 - [Cost policy](docs/COST_POLICY.md)
 
 ## Important limitations
