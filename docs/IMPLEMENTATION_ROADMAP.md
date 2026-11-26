@@ -91,14 +91,14 @@ The read-only audit is recorded in [Independent Security Audit — Control Plane
 
 **Required before any executor is reconsidered:**
 1. **Completed — SEC-06 artifact snapshot consistency:** the case checker now reads each declared artifact once, hashes the captured bytes and uses those same bytes for structural validation. A regression test mutates the on-disk file between snapshot capture and manifest validation and confirms the original snapshot is consistently used. GitHub Actions passed 103 tests in run [45780074842](https://github.com/siraajhussain-sketch/saas-factory/actions/runs/45780074842).
-2. **Next — SEC-07:** harden lifecycle/review schemas and validate event chronology.
-3. Bind any future approval to immutable repository revision, exact phase-plan digest and operation class.
+2. **Completed — SEC-07 schema and chronology hardening:** lifecycle and review records now reject unknown/missing fields, enforce strict timestamp windows and validate nondecreasing state-history chronology. Review records cannot predate their linked product case. New negative tests cover these boundaries; GitHub Actions passed 113 tests in run [45780592803](https://github.com/siraajhussain-sketch/saas-factory/actions/runs/45780592803). Independent re-audit remains pending.
+3. **Next — SEC-03:** bind any future approval to immutable repository revision, exact phase-plan digest and operation class.
 4. Define a trusted, integrity-protected policy configuration boundary.
 5. Design authenticated owner identity and protected asymmetric signing.
 6. Design durable approval records, atomic one-time claims, independent revocation and replay prevention.
 7. Preserve the distinction between verified evidence, human decisions and AI-generated suggestions.
 
-**Exit condition:** all required remediations are implemented and tested, then independently reviewed. SEC-06 is complete but has not yet received a separate independent re-audit. Passing tests or a structurally valid review record do not themselves authorize execution.
+**Exit condition:** all required remediations are implemented and tested, then independently reviewed. SEC-06 and SEC-07 are implemented with regression coverage but have not yet received a separate independent re-audit. Passing tests or a structurally valid review record do not themselves authorize execution.
 
 **Current restriction:** remain read-only. No executor, product-repository writes, paid providers, credentials, production data, provisioning, deployment or release automation.
 
