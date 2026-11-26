@@ -47,9 +47,11 @@ Lifecycle history, reviewer labels, finding statuses and resolution notes are no
 
 ### SEC-06 — High: potential time-of-check/time-of-use gap in case consistency validation
 
-The manifest validation path hashes artifact bytes, while the case-consistency checker subsequently resolves and reads artifact files again for content validation. A concurrent local modification between those operations could cause the checker to validate bytes different from the bytes whose hash was verified.
+**Status: remediated in the follow-up change; independent re-audit still pending.** At the audited baseline, the manifest validation path hashed artifact bytes, while the case-consistency checker subsequently reopened artifact files for content validation. A concurrent local modification could therefore have caused different bytes to be hashed and structurally checked.
 
-**Required remediation:** read each artifact once into a bounded in-memory snapshot, compute its digest from that snapshot, and pass the same bytes to every downstream validator. Add a regression test that exercises mutation between validation stages or otherwise proves the snapshot is reused.
+The follow-up implementation now captures each declared artifact once as bytes, verifies the SHA-256 digest against that snapshot, and passes the same snapshot bytes to downstream structural validators. A regression test mutates the on-disk brief after snapshot capture but before manifest validation; the checker confirms that it uses the original hash-matched snapshot. GitHub Actions run [45780074842](https://github.com/siraajhussain-sketch/saas-factory/actions/runs/45780074842) passed all 103 tests.
+
+This closes the identified double-read gap in the current local checker design. It is not a formal proof against a fully privileged local attacker, and it has not yet received a separate independent re-audit.
 
 ### SEC-07 — Medium: schema strictness and chronology validation are incomplete
 
@@ -77,8 +79,8 @@ These safeguards reduce current exposure, but they do not close the authorizatio
 
 ## Remediation order
 
-1. **Fix SEC-06 first:** snapshot each artifact once; hash and validate the same bytes; add regression coverage.
-2. **Harden SEC-07:** strict versioned schemas and complete lifecycle chronology validation.
+1. **SEC-06 — completed, pending independent re-audit:** snapshot each artifact once; hash and validate the same bytes; regression coverage passes.
+2. **Next: SEC-07:** strict versioned schemas and complete lifecycle chronology validation.
 3. **Strengthen approval scope (SEC-03):** immutable repository revision, phase-plan digest and operation-class binding.
 4. **Define trusted policy boundary (SEC-04):** policy integrity, ownership, versioning and pinning.
 5. **Design authenticated identity and signing (SEC-01):** protected asymmetric signing and key lifecycle.
@@ -96,4 +98,4 @@ The synthetic Workshop Queue case and its review tracker remain illustrative. Th
 
 **Current state:** suitable for continued read-only prototype development and bounded remediation.  
 **Not suitable for:** automated code execution, product-repository mutation, paid-provider calls, resource provisioning or release automation.  
-**Next recommended work:** remediate the artifact snapshot/TOCTOU issue and lifecycle schema/chronology gaps, with tests, while keeping the factory read-only.
+**Next recommended work:** complete SEC-07 lifecycle/review schema and chronology hardening, then independently re-audit the remediations while keeping the factory read-only.
