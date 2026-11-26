@@ -40,6 +40,7 @@ This repository contains governance, design documents, deterministic read-only v
 - [Phase 2 package validator](docs/PHASE_2_PACKAGE_VALIDATOR.md)
 - [AI-assisted discovery design](docs/AI_ASSISTED_DISCOVERY_DESIGN.md)
 - [AI output contract and no-network mock](docs/AI_OUTPUT_CONTRACT.md)
+- [NLP evaluation dataset and scoring harness](docs/AI_EVALUATION_HARNESS.md)
 
 ## Important limitations
 
