@@ -24,11 +24,19 @@ def string(value: Any, field: str, limit: int=500) -> str:
     require(len(value)<=limit,f"{field}: exceeds {limit} characters")
     return value.strip()
 
-def timestamp(value: Any, field: str) -> None:
+def timestamp(value: Any, field: str) -> datetime:
     raw=string(value,field,40)
     try: parsed=datetime.fromisoformat(raw[:-1]+"+00:00" if raw.endswith("Z") else raw)
     except ValueError as exc: raise ManifestValidationError(f"{field}: must be an ISO-8601 timestamp") from exc
     require(parsed.tzinfo is not None,f"{field}: timezone is required")
+    return parsed
+
+def exact_keys(value: Any, required: set[str], field: str) -> None:
+    require(isinstance(value,dict),f"{field}: must be an object")
+    missing=required-set(value)
+    unknown=set(value)-required
+    require(not missing,f"{field}: missing required fields: "+", ".join(sorted(missing)))
+    require(not unknown,f"{field}: unknown fields: "+", ".join(sorted(unknown)))
 
 def unique_ids(items: list, field: str) -> set[str]:
     found=set()
@@ -74,12 +82,14 @@ def read_artifact_snapshots(manifest: Any, root: str|Path) -> dict[str, bytes]:
 
 def validate_manifest(manifest: Any, root: str|Path, artifact_snapshots: dict[str,bytes]|None=None) -> dict:
     """Validate manifest metadata and hashes, optionally against caller-captured byte snapshots."""
-    require(isinstance(manifest,dict),"manifest: top-level value must be an object")
+    exact_keys(manifest,{"schema_version","case_id","product_id","lifecycle_state","created_at","updated_at","artifacts","validator_runs","human_reviews","state_history"},"manifest")
     require(manifest.get("schema_version")==SCHEMA_VERSION,"schema_version: unsupported version")
     case_id=string(manifest.get("case_id"),"case_id",80); product_id=string(manifest.get("product_id"),"product_id",80)
     require(bool(SLUG.fullmatch(case_id)),"case_id: invalid identifier"); require(bool(SLUG.fullmatch(product_id)),"product_id: invalid identifier")
     state=manifest.get("lifecycle_state"); require(isinstance(state,str) and state in STATES,"lifecycle_state: unsupported state")
-    timestamp(manifest.get("created_at"),"created_at"); timestamp(manifest.get("updated_at"),"updated_at")
+    created_at=timestamp(manifest.get("created_at"),"created_at")
+    updated_at=timestamp(manifest.get("updated_at"),"updated_at")
+    require(created_at<=updated_at,"updated_at: must not precede created_at")
     artifacts=manifest.get("artifacts"); runs=manifest.get("validator_runs"); reviews=manifest.get("human_reviews"); history=manifest.get("state_history")
     for value,field in ((artifacts,"artifacts"),(runs,"validator_runs"),(reviews,"human_reviews"),(history,"state_history")):
         require(isinstance(value,list),f"{field}: must be an array")
@@ -93,6 +103,7 @@ def validate_manifest(manifest: Any, root: str|Path, artifact_snapshots: dict[st
     except OSError as exc: raise ManifestValidationError("root: directory does not exist") from exc
     require(root_path.is_dir(),"root: must be a directory")
     for item in artifacts:
+        exact_keys(item,{"id","kind","path","sha256"},"artifact")
         ident=item["id"]; kind=string(item.get("kind"),f"artifact {ident}.kind",80)
         require(bool(SLUG.fullmatch(kind)),f"artifact {ident}: invalid kind")
         expected=string(item.get("sha256"),f"artifact {ident}.sha256",64)
@@ -108,23 +119,33 @@ def validate_manifest(manifest: Any, root: str|Path, artifact_snapshots: dict[st
         require(actual==expected,f"artifact {ident}: SHA-256 mismatch")
     unique_ids(runs,"validator_runs")
     for i,run in enumerate(runs):
+        exact_keys(run,{"id","validator","status","recorded_at","artifact_ids"},f"validator_runs[{i}]")
         string(run.get("validator"),f"validator_runs[{i}].validator",100)
         status=run.get("status"); require(isinstance(status,str) and status in VALIDATOR_STATUSES,f"validator_runs[{i}].status: unsupported status")
-        timestamp(run.get("recorded_at"),f"validator_runs[{i}].recorded_at")
+        recorded=timestamp(run.get("recorded_at"),f"validator_runs[{i}].recorded_at")
+        require(created_at<=recorded<=updated_at,f"validator_runs[{i}].recorded_at: must fall within the case created_at/updated_at interval")
         refs=run.get("artifact_ids"); require(isinstance(refs,list),f"validator_runs[{i}].artifact_ids: must be an array")
         require(all(isinstance(ref,str) for ref in refs),f"validator_runs[{i}]: artifact references must be strings")
         require(len(refs)==len(set(refs)),f"validator_runs[{i}]: duplicate artifact reference")
         require(all(ref in artifact_ids for ref in refs),f"validator_runs[{i}]: references an unknown artifact")
     unique_ids(reviews,"human_reviews")
     for i,review in enumerate(reviews):
+        exact_keys(review,{"id","stage","reviewer_label","decision","recorded_at","notes"},f"human_reviews[{i}]")
         string(review.get("stage"),f"human_reviews[{i}].stage",80); string(review.get("reviewer_label"),f"human_reviews[{i}].reviewer_label",120)
         decision=review.get("decision"); require(isinstance(decision,str) and decision in DECISIONS,f"human_reviews[{i}].decision: unsupported decision")
-        timestamp(review.get("recorded_at"),f"human_reviews[{i}].recorded_at"); string(review.get("notes"),f"human_reviews[{i}].notes",2000)
+        recorded=timestamp(review.get("recorded_at"),f"human_reviews[{i}].recorded_at")
+        require(created_at<=recorded<=updated_at,f"human_reviews[{i}].recorded_at: must fall within the case created_at/updated_at interval")
+        string(review.get("notes"),f"human_reviews[{i}].notes",2000)
     require(len(history)>=1,"state_history: at least the initial state is required")
     previous="INTAKE"
+    previous_time=None
     for i,event in enumerate(history):
-        require(isinstance(event,dict),f"state_history[{i}]: must be an object")
-        timestamp(event.get("recorded_at"),f"state_history[{i}].recorded_at"); string(event.get("reason"),f"state_history[{i}].reason",500)
+        exact_keys(event,{"from","to","recorded_at","reason"},f"state_history[{i}]")
+        event_time=timestamp(event.get("recorded_at"),f"state_history[{i}].recorded_at")
+        require(created_at<=event_time<=updated_at,f"state_history[{i}].recorded_at: must fall within the case created_at/updated_at interval")
+        require(previous_time is None or event_time>=previous_time,f"state_history[{i}].recorded_at: events must be chronological")
+        previous_time=event_time
+        string(event.get("reason"),f"state_history[{i}].reason",500)
         source,target=event.get("from"),event.get("to")
         if i==0: require(source is None and target=="INTAKE","state_history[0]: must establish initial INTAKE state")
         else:
