@@ -69,6 +69,14 @@ This roadmap is a proposal. Completing a phase requires review and explicit appr
 - Clear separation between review completion and authorization to implement, spend or deploy.
 - Review checklist is guidance, not certification or machine-enforceable approval.
 
+## Phase 2G — Read-only product case consistency checker
+- Require exactly one Product Brief, discovery report, architecture package and evidence register in a single lifecycle manifest.
+- Verify manifest artifact hashes and root-confined paths.
+- Rerun existing brief and Phase 2 structural validators against current artifact bytes.
+- Treat recorded validator runs, reviewer labels and lifecycle states as unauthenticated historical data.
+- Report human-review readiness only; never grant implementation or release authority.
+- Standard-library tests and mandatory dry-run CLI; no network, providers, writes or spending.
+
 ## Deferred — Expanded multilingual benchmark (before model selection)
 
 This is intentionally backlog work, not a current implementation phase. The version 1.1 synthetic dataset is only a smoke-test baseline and must not be used to claim production-grade Arabic or Urdu quality.
