@@ -32,7 +32,7 @@ Invalid outputs receive zero scores for the case and include a validation error.
 
 ```sh
 python -m unittest discover -s tests -v
-python -m control_plane.ai_evaluation --dataset examples/evaluation/nlp-evaluation-v1.json --outputs path/to/candidate-outputs.json
+python -m control_plane.ai_evaluation --dataset examples/evaluation/nlp-evaluation-v1.1.json --outputs path/to/candidate-outputs.json
 ```
 
 The candidate output file is a JSON object mapping each `case_id` to a response object that follows the AI output contract. The harness reads the files and prints a report; it does not write files, call the network, invoke a provider or change a repository.
