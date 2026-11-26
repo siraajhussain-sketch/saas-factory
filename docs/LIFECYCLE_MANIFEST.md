@@ -41,7 +41,9 @@ A case may transition to `CLOSED` from any state except `RELEASED` or `CLOSED`. 
 - Artifact paths must be relative, remain under the supplied root, contain no parent traversal or symlink component, and resolve to regular files.
 - SHA-256 digest verification for every referenced artifact.
 - Validator runs may reference only declared artifact IDs.
-- State history must start at `INTAKE`, follow the allowed sequence and end at the declared current state.
+- State history must start at `INTAKE`, follow the allowed sequence, have nondecreasing timestamps within the case time window and end at the declared current state.
+- `updated_at` cannot precede `created_at`; recorded validator and human-review timestamps must fall within the case time window.
+- Unknown fields are rejected rather than silently ignored; schema extensions require an explicit schema-version change.
 - Duplicate JSON object keys and non-standard numeric constants are rejected.
 
 ## 5. Run locally
