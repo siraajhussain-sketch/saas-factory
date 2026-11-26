@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "findings": [
+    {
+      "item_id": "finding-owner-001",
+      "category": "owner_fact",
+      "statement": "The owner says the initial target market is small service businesses.",
+      "source_document_id": "brief-demo",
+      "source_location": "Product brief, Market",
+      "supporting_excerpt": "Initial target: small service businesses.",
+      "model_confidence": 0.91,
+      "reviewer_status": "unreviewed",
+      "reviewer_note": null,
+      "reviewed_at": null
+    },
+    {
+      "item_id": "finding-unknown-001",
+      "category": "unknown",
+      "statement": "Willingness to pay has not been established.",
+      "source_document_id": null,
+      "source_location": null,
+      "supporting_excerpt": null,
+      "model_confidence": 0.72,
+      "reviewer_status": "unreviewed",
+      "reviewer_note": null,
+      "reviewed_at": null
+    }
+  ]
+}
