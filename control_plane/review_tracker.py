@@ -122,11 +122,14 @@ def validate_review_record(record: Any, manifest: Any, root: str | Path) -> dict
         require(ident not in seen, f"findings: duplicate id {ident}")
         seen.add(ident)
         category = finding.get("category")
-        require(category in CATEGORIES, f"{prefix}.category: unsupported category")
+        require(isinstance(category, str) and category in CATEGORIES,
+                f"{prefix}.category: unsupported category")
         severity = finding.get("severity")
-        require(severity in SEVERITIES, f"{prefix}.severity: unsupported severity")
+        require(isinstance(severity, str) and severity in SEVERITIES,
+                f"{prefix}.severity: unsupported severity")
         status = finding.get("status")
-        require(status in STATUSES, f"{prefix}.status: unsupported status")
+        require(isinstance(status, str) and status in STATUSES,
+                f"{prefix}.status: unsupported status")
         counts[status] += 1
         text_field(finding.get("title"), f"{prefix}.title", 200)
         text_field(finding.get("basis"), f"{prefix}.basis", 1200)
@@ -146,8 +149,9 @@ def validate_review_record(record: Any, manifest: Any, root: str | Path) -> dict
             text_field(resolution, f"{prefix}.resolution_note", 1200)
 
     recommendation = record.get("recommendation")
-    require(recommendation in {"do_not_proceed", "revise", "ready_for_owner_decision"},
-            "recommendation: unsupported value")
+    require(isinstance(recommendation, str) and recommendation in {
+        "do_not_proceed", "revise", "ready_for_owner_decision"
+    }, "recommendation: unsupported value")
     require(recommendation != "ready_for_owner_decision" or counts["critical"] == 0,
             "recommendation: critical findings prevent ready_for_owner_decision")
     text_field(record.get("summary"), "summary", 2000)
