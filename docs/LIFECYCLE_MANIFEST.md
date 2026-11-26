@@ -16,7 +16,7 @@ A version 1.0 manifest contains:
 - `schema_version`: exact contract version.
 - `case_id`, `product_id`: stable lowercase identifiers.
 - `lifecycle_state`: current state, which must equal the final state-history entry.
-- `created_at`, `updated_at`: ISO--8601 timestamps with timezone.
+- `created_at`, `updated_at`: ISO-8601 timestamps with timezone.
 - `artifacts`: unique IDs, artifact kind, root-relative path and SHA-256 digest.
 - `validator_runs`: unique run IDs, validator name, recorded status/time and artifact IDs.
 - `human_reviews`: unique review IDs, stage, reviewer label, decision, timestamp and notes.
@@ -30,7 +30,7 @@ The allowed forward sequence is:
 
 `INTAKE → DISCOVERY → ARCHITECTURE → OWNER_REVIEW → IMPLEMENTATION_PLANNING → IMPLEMENTATION → ACCEPTANCE → RELEASE_REVIEW → RELEASED`
 
-A case may be closed from any non-terminal state. This validator checks the recorded sequence only; it does not decide whether evidence or approvals required to advance a stage are sufficient. In particular, `OWNER_REVIEW` is not approval, and reaching `IMPLEMENTATION` does not authorize code changes.
+A case may transition to `CLOSED` from any state except `RELEASED` or `CLOSED`. This validator checks the recorded sequence only; it does not decide whether evidence or approvals required to advance a stage are sufficient. In particular, `OWNER_REVIEW` is not approval, and reaching `IMPLEMENTATION` does not authorize code changes.
 
 ## 4. Validation performed
 
