@@ -57,6 +57,30 @@ class ReviewTrackerTests(unittest.TestCase):
         with self.assertRaisesRegex(ReviewTrackerError, "must be false"):
             validate_review_record(record, self.manifest, self.root)
 
+    def test_unknown_review_record_field_blocks(self):
+        record = copy.deepcopy(self.record)
+        record["unexpected"] = "ignored?"
+        with self.assertRaisesRegex(ReviewTrackerError, "unknown fields"):
+            validate_review_record(record, self.manifest, self.root)
+
+    def test_unknown_reviewed_artifact_field_blocks(self):
+        record = copy.deepcopy(self.record)
+        record["reviewed_artifacts"][0]["unexpected"] = "value"
+        with self.assertRaisesRegex(ReviewTrackerError, "unknown fields"):
+            validate_review_record(record, self.manifest, self.root)
+
+    def test_unknown_finding_field_blocks(self):
+        record = copy.deepcopy(self.record)
+        record["findings"][0]["unexpected"] = "value"
+        with self.assertRaisesRegex(ReviewTrackerError, "unknown fields"):
+            validate_review_record(record, self.manifest, self.root)
+
+    def test_review_timestamp_cannot_predate_case(self):
+        record = copy.deepcopy(self.record)
+        record["created_at"] = "2026-11-26T05:59:59Z"
+        with self.assertRaisesRegex(ReviewTrackerError, "must not predate"):
+            validate_review_record(record, self.manifest, self.root)
+
     def test_duplicate_finding_id_blocks(self):
         record = copy.deepcopy(self.record)
         record["findings"].append(copy.deepcopy(record["findings"][0]))
