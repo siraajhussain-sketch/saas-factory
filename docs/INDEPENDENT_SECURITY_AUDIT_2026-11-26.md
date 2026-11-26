@@ -83,7 +83,7 @@ These safeguards reduce current exposure, but they do not close the authorizatio
 
 1. **SEC-06 — completed, pending independent re-audit:** snapshot each artifact once; hash and validate the same bytes; regression coverage passes.
 2. **SEC-07 — completed, pending independent re-audit:** strict versioned schemas and chronology checks are implemented and tested.
-3. **Next: SEC-03:** immutable repository revision, phase-plan digest and operation-class binding.
+3. **SEC-03 design drafted; implementation pending:** the proposed contract now specifies full commit SHA binding, canonical phase-plan digest, a closed operation-class registry, cross-field invariants and a negative-test matrix. See [SEC-03 Approval Scope Binding Contract](SEC_03_APPROVAL_SCOPE_BINDING.md). This is documentation only; the current validator and approval schema remain unchanged.
 4. **Define trusted policy boundary (SEC-04):** policy integrity, ownership, versioning and pinning.
 5. **Design authenticated identity and signing (SEC-01):** protected asymmetric signing and key lifecycle.
 6. **Design durable approval lifecycle (SEC-02):** atomic one-time claims, independent revocation, replay prevention and recovery.
@@ -100,4 +100,4 @@ The synthetic Workshop Queue case and its review tracker remain illustrative. Th
 
 **Current state:** suitable for continued read-only prototype development and bounded remediation.  
 **Not suitable for:** automated code execution, product-repository mutation, paid-provider calls, resource provisioning or release automation.  
-**Next recommended work:** address SEC-03 approval-scope binding, then independently re-audit the completed SEC-06/SEC-07 remediations while keeping the factory read-only.
+**Next recommended work:** implement SEC-03's versioned contract and negative tests only after the design is reviewed; independently re-audit the completed SEC-06/SEC-07 remediations. Keep the factory read-only throughout.
