@@ -1,6 +1,6 @@
 # SEC-03 — Approval Scope Binding Contract
 
-**Status:** Version-2 local validator prototype implemented; 142 standard-library tests passed in GitHub Actions run [45821430788](https://github.com/siraajhussain-sketch/saas-factory/actions/runs/45821430788) before the current follow-up fixes. Updated CI evidence is required for this revision. Independent security review remains pending. This is not a production approval service and does not authorize execution.
+**Status:** Version-2 local validator prototype implemented; 146 standard-library tests are expected after the current follow-up fixes; the first run exposed a fixture-signature mismatch in the new exact-file positive test. Updated CI evidence is required before treating this revision as passing. Independent security review remains pending. This is not a production approval service and does not authorize execution.
 
 ## 1. Security objective
 
