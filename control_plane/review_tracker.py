@@ -152,7 +152,8 @@ def validate_review_record(record: Any, manifest: Any, root: str | Path) -> dict
     require(isinstance(recommendation, str) and recommendation in {
         "do_not_proceed", "revise", "ready_for_owner_decision"
     }, "recommendation: unsupported value")
-    require(recommendation != "ready_for_owner_decision" or counts["critical"] == 0,
+    critical_count = sum(1 for finding in findings if finding.get("severity") == "critical")
+    require(recommendation != "ready_for_owner_decision" or critical_count == 0,
             "recommendation: critical findings prevent ready_for_owner_decision")
     text_field(record.get("summary"), "summary", 2000)
 
