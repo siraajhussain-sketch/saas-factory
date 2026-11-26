@@ -26,6 +26,13 @@ This roadmap is a proposal. Completing a phase requires review and explicit appr
 - Bounded implementation-phase proposal and explicit owner decision.
 - No product repository writes, provider calls, provisioning or deployment.
 
+## Phase 2A — Optional AI-assisted discovery design
+- Provider-independent NLP adapter contract.
+- Strict separation of model drafts, evidence and human decisions.
+- Data minimization, prompt-injection and failure controls.
+- Evaluation criteria and zero-cost-first options.
+- No provider selected, credentials, calls or spending.
+
 ## Phase 3 — Isolated product repository setup
 - Explicit repository and visibility approval.
 - Approved starter and baseline security controls.

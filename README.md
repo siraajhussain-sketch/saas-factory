@@ -38,6 +38,7 @@ This repository contains governance, design documents, a deterministic read-only
 - [Phase 1.1 strict input hardening](docs/PHASE_1_1_STRICT_INPUT_HARDENING.md)
 - [Phase 2 discovery and architecture package](docs/PHASE_2_READ_ONLY_DISCOVERY.md)
 - [Phase 2 package validator](docs/PHASE_2_PACKAGE_VALIDATOR.md)
+- [AI-assisted discovery design](docs/AI_ASSISTED_DISCOVERY_DESIGN.md)
 
 ## Important limitations
 
@@ -46,10 +47,3 @@ Documentation and passing tests do not establish production readiness. Each prod
 ## Repository boundaries
 
 Do not place customer data, secrets, provider credentials or confidential product specifications in this public repository. Use a private product repository for sensitive material.
-
-
-## Phase 2 package validator
-
-The local deterministic validator checks the structure of discovery, architecture and evidence documents. It uses only the Python standard library and never writes files or invokes providers.
-
-See [Phase 2 validator](docs/PHASE_2_PACKAGE_VALIDATOR.md) for usage and limitations.
