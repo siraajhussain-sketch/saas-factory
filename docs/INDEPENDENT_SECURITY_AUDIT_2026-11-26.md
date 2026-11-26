@@ -31,7 +31,11 @@ The prototype has no durable approval ledger or atomic one-time claim. A valid a
 
 The current approval binds several useful scope fields, including product, repository, branch, phase, path set and ADR digest, but does not bind an immutable repository commit identity and exact phase-plan digest. A branch name can move, and a plan can change without the approval representing the exact source and plan being executed.
 
-**Required before execution:** bind the full immutable repository revision, canonical phase-plan digest, ADR digest, normalized path set, operation class, environment, provider permissions and spend ceiling/currency.
+**Status: partially implemented as a read-only v2 prototype; independent re-audit pending.** The v2 validator now binds a declared full commit SHA, canonical phase-plan digest, ADR digest, exact path set, operation class and registry version, actions, environment, provider policy and zero-spend ceiling. The phase plan is hashed using a restricted RFC 8785-compatible canonical JSON profile (safe-range integers only; floats rejected). Negative tampering tests and canonicalization tests are included. GitHub Actions run [45821136897](https://github.com/siraajhussain-sketch/saas-factory/actions/runs/45821136897) passed 138 tests.
+
+The local validator does **not** verify that the actual checkout HEAD equals the declared commit; it reports `DECLARED_ONLY_NOT_CHECKED_OUT`. A trusted checkout verifier remains required. HMAC remains a shared-secret prototype, and SEC-01/SEC-02/SEC-04 remain open. This finding is not closed and the prototype is not executable authorization.
+
+**Required before execution:** independently review the v2 schema and canonicalization; implement a separately trusted checkout-revision verifier; bind a protected policy version; and resolve the authenticated identity, signing, replay and atomic-claim gaps.
 
 ### SEC-04 — High: trusted policy configuration boundary is undefined
 
@@ -83,7 +87,7 @@ These safeguards reduce current exposure, but they do not close the authorizatio
 
 1. **SEC-06 — completed, pending independent re-audit:** snapshot each artifact once; hash and validate the same bytes; regression coverage passes.
 2. **SEC-07 — completed, pending independent re-audit:** strict versioned schemas and chronology checks are implemented and tested.
-3. **SEC-03 design drafted; implementation pending:** the proposed contract now specifies full commit SHA binding, canonical phase-plan digest, a closed operation-class registry, cross-field invariants and a negative-test matrix. See [SEC-03 Approval Scope Binding Contract](SEC_03_APPROVAL_SCOPE_BINDING.md). This is documentation only; the current validator and approval schema remain unchanged.
+3. **SEC-03 partially implemented; independent re-audit pending:** v2 manifest/approval validation binds declared commit SHA, canonical phase-plan digest, operation class/registry version, exact actions and paths. CI run [45821136897](https://github.com/siraajhussain-sketch/saas-factory/actions/runs/45821136897) passed 138 tests. Actual checkout identity remains unverified; HMAC identity and replay/ledger gaps remain. See [SEC-03 Approval Scope Binding Contract](SEC_03_APPROVAL_SCOPE_BINDING.md).
 4. **Define trusted policy boundary (SEC-04):** policy integrity, ownership, versioning and pinning.
 5. **Design authenticated identity and signing (SEC-01):** protected asymmetric signing and key lifecycle.
 6. **Design durable approval lifecycle (SEC-02):** atomic one-time claims, independent revocation, replay prevention and recovery.
