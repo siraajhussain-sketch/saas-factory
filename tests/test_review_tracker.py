@@ -81,6 +81,13 @@ class ReviewTrackerTests(unittest.TestCase):
         with self.assertRaisesRegex(ReviewTrackerError, "critical findings"):
             validate_review_record(record, self.manifest, self.root)
 
+
+    def test_non_string_enum_values_block_cleanly(self):
+        record = copy.deepcopy(self.record)
+        record["findings"][0]["category"] = []
+        with self.assertRaisesRegex(ReviewTrackerError, "unsupported category"):
+            validate_review_record(record, self.manifest, self.root)
+
     def test_non_object_finding_blocks_cleanly(self):
         record = copy.deepcopy(self.record)
         record["findings"][0] = []
