@@ -37,6 +37,7 @@ This repository contains governance, design documents, deterministic read-only v
 - [Phase 1 deterministic validator](docs/PHASE_1_CONTROL_PLANE.md)
 - [Phase 1.1 strict input hardening](docs/PHASE_1_1_STRICT_INPUT_HARDENING.md)
 - [Phase 2 discovery and architecture package](docs/PHASE_2_READ_ONLY_DISCOVERY.md)
+- [Product Brief validator](docs/PRODUCT_BRIEF_VALIDATOR.md)
 - [Phase 2 package validator](docs/PHASE_2_PACKAGE_VALIDATOR.md)
 - [AI-assisted discovery design](docs/AI_ASSISTED_DISCOVERY_DESIGN.md)
 - [AI output contract and no-network mock](docs/AI_OUTPUT_CONTRACT.md)
