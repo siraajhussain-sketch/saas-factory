@@ -10,7 +10,7 @@ from typing import Any
 from control_plane.lifecycle_manifest import (
     ManifestValidationError,
     read_manifest,
-    resolve_artifact,
+    read_artifact_snapshots,
     validate_manifest,
 )
 from control_plane.phase2_validator import (
@@ -36,7 +36,10 @@ class CaseConsistencyError(ValueError):
 
 def validate_case(manifest: Any, root: str | Path) -> dict:
     """Validate one manifest and re-run read-only structural checks on its core artifacts."""
-    manifest_result = validate_manifest(manifest, root)
+    # Capture every declared artifact exactly once. Hash verification and all
+    # downstream structural checks must consume these same immutable bytes.
+    snapshots = read_artifact_snapshots(manifest, root)
+    manifest_result = validate_manifest(manifest, root, artifact_snapshots=snapshots)
     artifacts = manifest["artifacts"]
     by_kind: dict[str, list[dict]] = {}
     for artifact in artifacts:
@@ -55,17 +58,15 @@ def validate_case(manifest: Any, root: str | Path) -> dict:
             + ", ".join(duplicates)
         )
 
-    root_path = Path(root)
     contents: dict[str, str] = {}
     artifact_summary = []
     for kind in sorted(REQUIRED_KINDS):
         artifact = by_kind[kind][0]
-        path = resolve_artifact(root_path, artifact["path"], artifact["id"])
         try:
-            contents[kind] = path.read_text(encoding="utf-8")
-        except (OSError, UnicodeError) as exc:
+            contents[kind] = snapshots[artifact["id"]].decode("utf-8")
+        except UnicodeError as exc:
             raise CaseConsistencyError(
-                f"artifact {artifact['id']}: cannot read UTF-8 text ({type(exc).__name__})"
+                f"artifact {artifact['id']}: snapshot is not valid UTF-8 text"
             ) from exc
         artifact_summary.append({
             "id": artifact["id"],
@@ -95,6 +96,7 @@ def validate_case(manifest: Any, root: str | Path) -> dict:
         "artifacts": artifact_summary,
         "checks": {
             "manifest_and_artifact_hashes": "valid",
+            "artifact_snapshot_reuse": "same_bytes_hashed_and_structurally_validated",
             "required_artifact_kinds": "complete",
             "artifact_kind_cardinality": "exactly_one_each",
             "product_brief_structure": brief_result["status"],
