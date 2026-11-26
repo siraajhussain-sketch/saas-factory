@@ -142,13 +142,20 @@ class ApprovalScopeV2Tests(unittest.TestCase):
         approval = self.signed()
         changed = copy.deepcopy(self.manifest)
         changed["repository_commit_sha"] = "c" * 40
-        with self.assertRaisesRegex(ValidationError, "approval mismatch: repository_commit_sha"):
+        with self.assertRaisesRegex(ValidationError, "phase plan mismatch: repository_commit_sha"):
             self.run_plan(changed, approval)
 
     def test_t02_changed_approval_commit_rejected(self):
         approval = self.signed()
         approval["repository_commit_sha"] = "c" * 40
         with self.assertRaisesRegex(ValidationError, "approval mismatch: repository_commit_sha"):
+            self.run_plan(approval=approval)
+
+
+    def test_tampered_v2_signature_rejected(self):
+        approval = self.signed()
+        approval["signature"] = "0" * 64
+        with self.assertRaisesRegex(ValidationError, "signature verification failed"):
             self.run_plan(approval=approval)
 
     def test_t03_non_full_commit_sha_rejected(self):
