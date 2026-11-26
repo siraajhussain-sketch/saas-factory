@@ -1,6 +1,6 @@
 # SEC-03 — Approval Scope Binding Contract
 
-**Status:** Version-2 local validator prototype implemented; GitHub Actions run [45827331923](https://github.com/siraajhussain-sketch/saas-factory/actions/runs/45827331923) passed 146 standard-library tests. Independent security review remains pending. This is not a production approval service and does not authorize execution.
+**Status:** Version-2 local validator prototype implemented; GitHub Actions run [45827461196](https://github.com/siraajhussain-sketch/saas-factory/actions/runs/45827461196) passed 146 standard-library tests. Independent security review remains pending. This is not a production approval service and does not authorize execution.
 
 ## 1. Security objective
 
