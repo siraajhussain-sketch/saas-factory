@@ -55,7 +55,25 @@ def resolve_artifact(root: Path, relative: Any, ident: str) -> Path:
     require(resolved.is_file(),f"artifact {ident}: path must reference a regular file")
     return resolved
 
-def validate_manifest(manifest: Any, root: str|Path) -> dict:
+def read_artifact_snapshots(manifest: Any, root: str|Path) -> dict[str, bytes]:
+    """Read each declared artifact once; callers must reuse these exact bytes."""
+    require(isinstance(manifest,dict),"manifest: top-level value must be an object")
+    artifacts=manifest.get("artifacts")
+    require(isinstance(artifacts,list),"artifacts: must be an array")
+    snapshots={}
+    for index,item in enumerate(artifacts):
+        require(isinstance(item,dict),f"artifacts[{index}]: must be an object")
+        ident=string(item.get("id"),f"artifacts[{index}].id",80)
+        require(ident not in snapshots,f"artifacts: duplicate id {ident}")
+        path=resolve_artifact(Path(root),item.get("path"),ident)
+        try:
+            snapshots[ident]=path.read_bytes()
+        except OSError as exc:
+            raise ManifestValidationError(f"artifact {ident}: cannot read bytes ({type(exc).__name__})") from exc
+    return snapshots
+
+def validate_manifest(manifest: Any, root: str|Path, artifact_snapshots: dict[str,bytes]|None=None) -> dict:
+    """Validate manifest metadata and hashes, optionally against caller-captured byte snapshots."""
     require(isinstance(manifest,dict),"manifest: top-level value must be an object")
     require(manifest.get("schema_version")==SCHEMA_VERSION,"schema_version: unsupported version")
     case_id=string(manifest.get("case_id"),"case_id",80); product_id=string(manifest.get("product_id"),"product_id",80)
@@ -66,6 +84,10 @@ def validate_manifest(manifest: Any, root: str|Path) -> dict:
     for value,field in ((artifacts,"artifacts"),(runs,"validator_runs"),(reviews,"human_reviews"),(history,"state_history")):
         require(isinstance(value,list),f"{field}: must be an array")
     artifact_ids=unique_ids(artifacts,"artifacts")
+    if artifact_snapshots is not None:
+        require(isinstance(artifact_snapshots,dict),"artifact_snapshots: must be a mapping")
+        require(set(artifact_snapshots)==artifact_ids,"artifact_snapshots: IDs must exactly match manifest artifacts")
+        require(all(isinstance(value,bytes) for value in artifact_snapshots.values()),"artifact_snapshots: values must be bytes")
     root_path=Path(root)
     try: root_path.resolve(strict=True)
     except OSError as exc: raise ManifestValidationError("root: directory does not exist") from exc
@@ -75,7 +97,14 @@ def validate_manifest(manifest: Any, root: str|Path) -> dict:
         require(bool(SLUG.fullmatch(kind)),f"artifact {ident}: invalid kind")
         expected=string(item.get("sha256"),f"artifact {ident}.sha256",64)
         require(bool(SHA256.fullmatch(expected)),f"artifact {ident}: invalid SHA-256")
-        actual=hashlib.sha256(resolve_artifact(root_path,item.get("path"),ident).read_bytes()).hexdigest()
+        # Re-check confinement even when using a snapshot, but never reopen the file.
+        resolve_artifact(root_path,item.get("path"),ident)
+        if artifact_snapshots is None:
+            try: content=resolve_artifact(root_path,item.get("path"),ident).read_bytes()
+            except OSError as exc: raise ManifestValidationError(f"artifact {ident}: cannot read bytes ({type(exc).__name__})") from exc
+        else:
+            content=artifact_snapshots[ident]
+        actual=hashlib.sha256(content).hexdigest()
         require(actual==expected,f"artifact {ident}: SHA-256 mismatch")
     unique_ids(runs,"validator_runs")
     for i,run in enumerate(runs):
