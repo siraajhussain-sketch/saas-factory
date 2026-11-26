@@ -55,12 +55,6 @@ This roadmap is a proposal. Completing a phase requires review and explicit appr
 - Document benchmark limitations and human-review requirements.
 - No model invocation, provider credentials, network access or product repository writes.
 
-## Phase 2F — Human review checklist
-- Structured human review for discovery, evidence quality, architecture, cost/dependencies and security/privacy.
-- Explicit PASS / FAIL / N/A outcomes, reviewer notes and bounded next-phase decision.
-- Clear separation between review completion and authorization to implement, spend or deploy.
-- Review checklist is guidance, not certification or machine-enforceable approval.
-
 ## Phase 2E — Read-only lifecycle manifest
 - Versioned JSON case record linking artifacts, validator-run records, human review notes and lifecycle history.
 - Root-confined artifact paths and SHA-256 integrity checks.
@@ -68,6 +62,12 @@ This roadmap is a proposal. Completing a phase requires review and explicit appr
 - Human decisions remain unauthenticated records; lifecycle state never grants authority.
 - Standard-library tests and mandatory dry-run CLI.
 - No database, network, provider, executor, product repository writes or spending.
+
+## Phase 2F — Human review checklist
+- Structured human review for discovery, evidence quality, architecture, cost/dependencies and security/privacy.
+- Explicit PASS / FAIL / N/A outcomes, reviewer notes and bounded next-phase decision.
+- Clear separation between review completion and authorization to implement, spend or deploy.
+- Review checklist is guidance, not certification or machine-enforceable approval.
 
 ## Deferred — Expanded multilingual benchmark (before model selection)
 
