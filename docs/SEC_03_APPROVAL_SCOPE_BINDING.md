@@ -1,6 +1,6 @@
 # SEC-03 — Approval Scope Binding Contract
 
-**Status:** Version-2 local validator prototype implemented; 138 standard-library tests pass in GitHub Actions run [45821430788](https://github.com/siraajhussain-sketch/saas-factory/actions/runs/45821430788). Independent security review remains pending. This is not a production approval service and does not authorize execution.
+**Status:** Version-2 local validator prototype implemented; 142 standard-library tests passed in GitHub Actions run [45821430788](https://github.com/siraajhussain-sketch/saas-factory/actions/runs/45821430788) before the current follow-up fixes. Updated CI evidence is required for this revision. Independent security review remains pending. This is not a production approval service and does not authorize execution.
 
 ## 1. Security objective
 
@@ -30,7 +30,7 @@ The next approval-contract version must require the following fields in both the
 | `environment` | Exact environment; defaults to `none` |
 | `provider_allowlist` | Exact provider set; defaults to empty |
 | `max_spend` / `currency` | Explicit ceiling and currency; defaults to zero |
-| `issued_at` / `not_before` / `expires_at` | Signed validity interval |
+| `issued_at` / `not_before` / `expires_at` | Signed validity interval; v2 approval requires all three, with `issued_at <= not_before < expires_at` and validation blocked until `not_before` |
 | `approval_id` / `nonce` | Unique identifiers; uniqueness and one-time use require SEC-02 ledger controls |
 | `approver_identity` / `key_id` | Reserved for authenticated identity and protected signing design under SEC-01 |
 
@@ -144,10 +144,10 @@ Even after SEC-03 passes, execution remains blocked by SEC-01, SEC-02, SEC-04 an
 
 ## 10. Implementation status and limitations
 
-The version-2 local validator path is implemented in `control_plane/validator.py`, with focused regression coverage in `tests/test_approval_scope_v2.py`.
+The version-2 local validator path is implemented in `control_plane/validator.py`, with focused regression coverage in `tests/test_approval_scope_v2.py`. Expected output paths are checked against directory-prefix scopes or exact file scopes; a filename-prefix sibling is not treated as an approved file.
 
 Implemented and tested:
-- strict v2 manifest and approval field sets; v1 approvals are not accepted for a v2 manifest;
+- strict v2 manifest and approval field sets; v1 approvals are not accepted for a v2 manifest; the signed approval requires `issued_at`, `not_before` and `expires_at`, and validation enforces the not-before boundary;
 - full 40-character lowercase commit SHA syntax and exact binding across manifest, phase plan and signed approval;
 - phase-plan file parsing with duplicate-key and non-finite-number rejection;
 - canonical SHA-256 digest verification for the phase plan;
