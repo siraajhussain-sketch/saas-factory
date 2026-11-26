@@ -215,7 +215,7 @@ def validate_manifest_v2(manifest: dict[str, Any], policy: dict[str, Any]) -> No
         "schema_version", "product_id", "product_name", "repository",
         "repository_commit_sha", "target_branch", "adr_path", "adr_sha256",
         "requested_phase", "phase_plan_path", "phase_plan_schema_version",
-        "phase_plan_sha256", "operation_class", "allowed_actions",
+        "phase_plan_sha256", "operation_class_registry_version", "operation_class", "allowed_actions",
         "requested_paths", "provider_policy", "environment", "intent"
     })
     require(manifest["schema_version"] == "2.0", "unsupported manifest schema_version")
@@ -233,6 +233,7 @@ def validate_manifest_v2(manifest: dict[str, Any], policy: dict[str, Any]) -> No
     safe_relative_path(manifest["phase_plan_path"])
     require(isinstance(manifest["phase_plan_schema_version"], str) and manifest["phase_plan_schema_version"] == "1.0", "unsupported phase plan schema version")
     require(isinstance(manifest["phase_plan_sha256"], str) and SHA256.fullmatch(manifest["phase_plan_sha256"]), "invalid phase plan SHA-256")
+    require(manifest["operation_class_registry_version"] == OPERATION_CLASS_REGISTRY_VERSION, "operation class registry version mismatch")
     require(manifest["operation_class"] in OPERATION_CLASSES, "unknown operation class")
     require(manifest["operation_class"] == "read_only_validation", "operation class is disabled in this prototype")
     actions = manifest["allowed_actions"]
@@ -292,6 +293,9 @@ def validate_phase_plan_v2(plan: dict[str, Any], manifest: dict[str, Any]) -> No
     require(isinstance(criteria, list) and 1 <= len(criteria) <= 30, "acceptance_criteria must contain 1..30 entries")
     require(all(isinstance(item, str) and 1 <= len(item) <= 500 for item in criteria), "invalid acceptance criterion")
     _validate_scope_paths(plan["permitted_paths"], {"allowed_path_prefixes": ["src/", "tests/", "docs/", "products/"]}, "phase plan permitted_paths")
+    for step in steps:
+        for output in step["expected_outputs"]:
+            require(any(output.startswith(prefix) for prefix in plan["permitted_paths"]), "phase plan expected output is outside permitted paths")
 
 def load_phase_plan_v2(manifest: dict[str, Any], root: Path) -> dict[str, Any]:
     target = resolve_file(root, manifest["phase_plan_path"])
@@ -313,7 +317,7 @@ def verify_approval_v2(approval: dict[str, Any], manifest: dict[str, Any], now: 
     keys(approval, {
         "schema_version", "approval_id", "product_id", "repository",
         "repository_commit_sha", "target_branch", "adr_sha256", "phase",
-        "phase_plan_path", "phase_plan_schema_version", "phase_plan_sha256",
+        "phase_plan_path", "phase_plan_schema_version", "phase_plan_sha256", "operation_class_registry_version",
         "operation_class", "allowed_actions", "permitted_paths", "environment",
         "provider_allowlist", "max_spend", "currency", "approver", "issued_at",
         "expires_at", "revoked", "nonce", "signature"
@@ -328,6 +332,7 @@ def verify_approval_v2(approval: dict[str, Any], manifest: dict[str, Any], now: 
         ("phase_plan_path", "phase_plan_path"),
         ("phase_plan_schema_version", "phase_plan_schema_version"),
         ("phase_plan_sha256", "phase_plan_sha256"),
+        ("operation_class_registry_version", "operation_class_registry_version"),
         ("operation_class", "operation_class"), ("allowed_actions", "allowed_actions"),
         ("permitted_paths", "requested_paths"), ("environment", "environment"),
     )
