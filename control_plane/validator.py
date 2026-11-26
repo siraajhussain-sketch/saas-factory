@@ -247,6 +247,13 @@ def validate_manifest_v2(manifest: dict[str, Any], policy: dict[str, Any]) -> No
     require(type(provider["max_spend_usd"]) is int and provider["max_spend_usd"] == 0, "spend cap must be integer zero")
     require(manifest["environment"] == "none" and manifest["intent"] == "dry-run", "only no-environment dry-run intent is permitted")
 
+def _path_is_within_scope(path: str, scope: str) -> bool:
+    """A trailing slash denotes a directory; otherwise scope is one exact file."""
+    if scope.endswith("/"):
+        return path.startswith(scope)
+    return path == scope
+
+
 def validate_phase_plan_v2(plan: dict[str, Any], manifest: dict[str, Any]) -> None:
     keys(plan, {
         "schema_version", "canonicalization_profile", "operation_class_registry_version",
@@ -287,6 +294,7 @@ def validate_phase_plan_v2(plan: dict[str, Any], manifest: dict[str, Any]) -> No
         require(len(output_folded) == len(set(output_folded)), "phase plan expected outputs contain case-folding collisions")
         for output in step["expected_outputs"]:
             safe_relative_path(output)
+            require(not output.endswith("/"), "phase plan expected outputs must be file paths")
         step_ids.append(step["step_id"])
     require(len(step_ids) == len(set(step_ids)), "duplicate phase plan step_id")
     seen = set()
@@ -299,7 +307,7 @@ def validate_phase_plan_v2(plan: dict[str, Any], manifest: dict[str, Any]) -> No
     _validate_scope_paths(plan["permitted_paths"], {"allowed_path_prefixes": ["src/", "tests/", "docs/", "products/"]}, "phase plan permitted_paths")
     for step in steps:
         for output in step["expected_outputs"]:
-            require(any(output.startswith(prefix) for prefix in plan["permitted_paths"]), "phase plan expected output is outside permitted paths")
+            require(any(_path_is_within_scope(output, scope) for scope in plan["permitted_paths"]), "phase plan expected output is outside permitted paths")
 
 def load_phase_plan_v2(manifest: dict[str, Any], root: Path) -> dict[str, Any]:
     target = resolve_file(root, manifest["phase_plan_path"])
@@ -324,7 +332,7 @@ def verify_approval_v2(approval: dict[str, Any], manifest: dict[str, Any], now: 
         "phase_plan_path", "phase_plan_schema_version", "phase_plan_sha256", "operation_class_registry_version",
         "operation_class", "allowed_actions", "permitted_paths", "environment",
         "provider_allowlist", "max_spend", "currency", "approver", "issued_at",
-        "expires_at", "revoked", "nonce", "signature"
+        "not_before", "expires_at", "revoked", "nonce", "signature"
     })
     require(approval["schema_version"] == "2.0", "unsupported approval schema_version")
     require(isinstance(approval["approval_id"], str) and SAFE_ID.fullmatch(approval["approval_id"]), "invalid approval_id")
@@ -347,11 +355,14 @@ def verify_approval_v2(approval: dict[str, Any], manifest: dict[str, Any], now: 
     require(approval["currency"] == "USD", "approval currency must be USD")
     require(isinstance(approval["approver"], str) and len(approval["approver"]) >= 2, "approver is required")
     issued = parse_timestamp(approval["issued_at"], "issued_at")
+    not_before = parse_timestamp(approval["not_before"], "not_before")
     expires = parse_timestamp(approval["expires_at"], "expires_at")
     current = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
+    require(issued <= not_before, "approval not_before cannot precede issued_at")
     require(issued <= current, "approval issued_at is in the future")
+    require(not_before <= current, "approval is not yet valid")
     require(expires > current, "approval has expired")
-    require(expires > issued and expires - issued <= timedelta(days=7), "approval validity must be positive and no longer than seven days")
+    require(expires > not_before and expires - issued <= timedelta(days=7), "approval validity must be positive and no longer than seven days")
     require(approval["revoked"] is False, "approval is revoked")
     signature = approval["signature"]
     require(isinstance(signature, str) and SIGNATURE.fullmatch(signature), "invalid HMAC signature format")
