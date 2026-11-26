@@ -78,6 +78,15 @@ This roadmap is a proposal. Completing a phase requires review and explicit appr
 - Report human-review readiness only; never grant implementation or release authority.
 - Standard-library tests and mandatory dry-run CLI; no network, providers, writes or spending.
 
+## Phase 2H — Read-only review findings and remediation tracker
+
+- Versioned review record tied to one case and exact hashes of its four core artifacts.
+- Structured findings with category, severity, status, owner label, next action and optional target date.
+- Resolution notes required for claimed-resolved findings and accepted risks; these remain unverified claims.
+- Deterministic local validator reruns the case consistency checks and verifies reviewed artifact references.
+- Assistant-generated assessments remain explicitly distinct from human reviews.
+- No authenticated assignments, notifications, workflow transitions, writes, network calls, providers, spending or authorization.
+
 ## Deferred — Expanded multilingual benchmark (before model selection)
 
 This is intentionally backlog work, not a current implementation phase. The version 1.1 synthetic dataset is only a smoke-test baseline and must not be used to claim production-grade Arabic or Urdu quality.
