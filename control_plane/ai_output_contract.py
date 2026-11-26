@@ -106,7 +106,7 @@ def parse_and_validate_output(
             raise AIOutputValidationError(f"{prefix}.item_id is duplicated")
         seen_ids.add(item_id)
 
-        if finding["category"] not in CATEGORIES:
+        if not isinstance(finding["category"], str) or finding["category"] not in CATEGORIES:
             raise AIOutputValidationError(f"{prefix}.category is unsupported")
         statement = finding["statement"]
         if not isinstance(statement, str) or not statement.strip() or len(statement) > MAX_STATEMENT:
