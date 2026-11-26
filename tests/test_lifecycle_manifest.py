@@ -61,7 +61,7 @@ class LifecycleManifestTests(unittest.TestCase):
   self.manifest["state_history"].append({"from":"INTAKE","to":"DISCOVERY","recorded_at":"2026-11-26T10:00:30Z","reason":"Out of order"})
   with self.assertRaisesRegex(ManifestValidationError,"events must be chronological"): validate_manifest(self.manifest,self.root)
  def test_validator_and_review_timestamps_must_fit_case_window(self):
-  self.manifest["validator_runs"][0]["recorded_at"]="2026-11-26T10:03:00Z"
+  self.manifest["validator_runs"][0]["recorded_at"]="2026-11-26T10:04:00Z"
   with self.assertRaisesRegex(ManifestValidationError,"case created_at/updated_at interval"): validate_manifest(self.manifest,self.root)
  def test_naive_timestamp_blocks(self):
   self.manifest["updated_at"]="2026-11-26T10:00:00"
