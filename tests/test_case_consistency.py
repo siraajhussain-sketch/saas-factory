@@ -202,6 +202,20 @@ class CaseConsistencyTests(unittest.TestCase):
         result = validate_case(self.manifest, self.root)
         self.assertFalse(result["authorization_granted"])
 
+
+    def test_committed_synthetic_workshop_queue_fixture(self):
+        from control_plane.lifecycle_manifest import read_manifest
+
+        repository_root = Path(__file__).resolve().parents[1]
+        fixture_root = repository_root / "examples" / "lifecycle"
+        manifest_path = fixture_root / "sample-case.json"
+        manifest = read_manifest(manifest_path)
+        result = validate_case(manifest, fixture_root)
+        self.assertEqual(result["case_id"], "workshop-queue-demo-001")
+        self.assertEqual(result["status"], "CASE_PACKAGE_READY_FOR_HUMAN_REVIEW")
+        self.assertEqual(len(result["artifacts"]), 4)
+        self.assertFalse(result["authorization_granted"])
+
     def refresh_hash(self, kind):
         artifact = next(item for item in self.manifest["artifacts"] if item["kind"] == kind)
         path = self.root / artifact["path"]
