@@ -38,8 +38,8 @@ def make_case(root):
         "target_branch": "main",
         "phase_id": "foundation",
         "steps": [
-            {"step_id": "validate-inputs", "description": "Validate local inputs", "depends_on": [], "expected_outputs": ["docs/reports/validation.md"]},
-            {"step_id": "summarize-scope", "description": "Produce a plan-only scope summary", "depends_on": ["validate-inputs"], "expected_outputs": ["docs/reports/scope.md"]},
+            {"step_id": "validate-inputs", "description": "Validate local inputs", "depends_on": [], "expected_outputs": ["tests/validation.md"]},
+            {"step_id": "summarize-scope", "description": "Produce a plan-only scope summary", "depends_on": ["validate-inputs"], "expected_outputs": ["tests/scope.md"]},
         ],
         "acceptance_criteria": ["All request fields validate", "No external side effects occur"],
         "permitted_paths": ["src/", "tests/"],
@@ -65,6 +65,7 @@ def make_case(root):
         "phase_plan_path": "docs/phase-plans/foundation.json",
         "phase_plan_schema_version": "1.0",
         "phase_plan_sha256": digest,
+        "operation_class_registry_version": "1.0",
         "operation_class": "read_only_validation",
         "allowed_actions": ["validate_inputs", "validate_phase_plan", "produce_plan_only_result"],
         "requested_paths": ["src/", "tests/"],
@@ -87,6 +88,7 @@ def make_approval(manifest, **changes):
         "phase_plan_path": manifest["phase_plan_path"],
         "phase_plan_schema_version": manifest["phase_plan_schema_version"],
         "phase_plan_sha256": manifest["phase_plan_sha256"],
+        "operation_class_registry_version": manifest["operation_class_registry_version"],
         "operation_class": manifest["operation_class"],
         "allowed_actions": list(manifest["allowed_actions"]),
         "permitted_paths": list(manifest["requested_paths"]),
@@ -185,7 +187,7 @@ class ApprovalScopeV2Tests(unittest.TestCase):
     def test_t08_path_scope_expansion_rejected(self):
         changed = copy.deepcopy(self.manifest)
         changed["requested_paths"] = ["src/", "tests/", "docs/"]
-        with self.assertRaisesRegex(ValidationError, "phase plan digest"):
+        with self.assertRaisesRegex(ValidationError, "phase plan mismatch: permitted_paths"):
             self.run_plan(changed)
 
     def test_t09_repository_write_operation_is_disabled(self):
