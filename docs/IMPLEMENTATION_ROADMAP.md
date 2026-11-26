@@ -47,6 +47,19 @@ This roadmap is a proposal. Completing a phase requires review and explicit appr
 - Document benchmark limitations and human-review requirements.
 - No model invocation, provider credentials, network access or product repository writes.
 
+## Deferred — Expanded multilingual benchmark (before model selection)
+
+This is intentionally backlog work, not a current implementation phase. The version 1.1 synthetic dataset is only a smoke-test baseline and must not be used to claim production-grade Arabic or Urdu quality.
+
+- Expand UAE-focused Arabic coverage with reviewed Modern Standard Arabic, Gulf/Emirati-style phrasing and formal business-document language.
+- Add realistic but synthetic UAE business scenarios, longer passages, spelling/morphology variants, diacritics, right-to-left layout cases and Arabic–English code-switching.
+- Expand Urdu phrasing and Urdu–English code-switching for Pakistan-facing workflows.
+- Have fluent Arabic and Urdu reviewers validate expected findings, terminology and acceptable interpretations; record disagreements and uncertainty.
+- Define separate minimum acceptance thresholds for Arabic, English and Urdu, plus mixed-language cases; do not hide weak per-language performance behind an aggregate score.
+- Only after this dataset and review process are ready, benchmark candidate small/free/local models for quality, privacy, licensing, hardware requirements, latency and total operating cost. Do not connect a model or send product/customer documents without a separate approval.
+
+**Exit condition:** a versioned, human-reviewed dataset and documented per-language acceptance criteria exist. Until then, model selection and integration remain deferred.
+
 ## Phase 3 — Isolated product repository setup
 - Explicit repository and visibility approval.
 - Approved starter and baseline security controls.
