@@ -17,6 +17,14 @@ This roadmap is a proposal. Completing a phase requires review and explicit appr
 - Unit tests and CI.
 - No executor or external side effects.
 
+## Phase 2D — Product brief intake validation
+- Deterministic local validation of the Product Brief template.
+- Required section and unfinished-template checks.
+- Blank labeled fields blocked; explicit `UNKNOWN` remains acceptable.
+- Read-only CLI with mandatory dry-run and standard-library tests.
+- Passing status means ready for human discovery review only; no implementation authority.
+- No network, model, provider, credentials, product repository writes or spending.
+
 ## Phase 2 — Read-only discovery and architecture package
 - Structured intake and evidence register.
 - Evidence-backed discovery report with facts separated from assumptions.
