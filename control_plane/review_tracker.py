@@ -37,6 +37,23 @@ def text_field(value: Any, field: str, limit: int = 1000) -> str:
     require(len(value) <= limit, f"{field}: exceeds {limit} characters")
     return value.strip()
 
+def exact_keys(value: Any, required: set[str], field: str) -> None:
+    require(isinstance(value, dict), f"{field}: must be an object")
+    missing = required - set(value)
+    unknown = set(value) - required
+    require(not missing, f"{field}: missing required fields: " + ", ".join(sorted(missing)))
+    require(not unknown, f"{field}: unknown fields: " + ", ".join(sorted(unknown)))
+
+
+def parse_timestamp(value: Any, field: str) -> datetime:
+    raw = text_field(value, field, 40)
+    try:
+        parsed = datetime.fromisoformat(raw[:-1] + "+00:00" if raw.endswith("Z") else raw)
+    except ValueError as exc:
+        raise ReviewTrackerError(f"{field}: must be an ISO-8601 timestamp") from exc
+    require(parsed.tzinfo is not None, f"{field}: timezone is required")
+    return parsed
+
 
 def reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict:
     result = {}
@@ -64,7 +81,7 @@ def read_review_record(path: str | Path) -> dict:
 
 
 def validate_review_record(record: Any, manifest: Any, root: str | Path) -> dict:
-    require(isinstance(record, dict), "review record: top-level value must be an object")
+    exact_keys(record,{"schema_version","assessment_type","human_review_completed","authorization_granted","case_id","product_id","created_at","summary","recommendation","reviewed_artifacts","findings"},"review record")
     try:
         case_result = validate_case(manifest, root)
     except (ManifestValidationError, CaseConsistencyError) as exc:
@@ -79,12 +96,9 @@ def validate_review_record(record: Any, manifest: Any, root: str | Path) -> dict
             "authorization_granted: must be false")
     require(record.get("case_id") == case_result["case_id"], "case_id: does not match lifecycle manifest")
     require(record.get("product_id") == case_result["product_id"], "product_id: does not match lifecycle manifest")
-    text_field(record.get("created_at"), "created_at", 40)
-    try:
-        created = datetime.fromisoformat(record["created_at"].replace("Z", "+00:00"))
-    except ValueError as exc:
-        raise ReviewTrackerError("created_at: must be an ISO-8601 timestamp") from exc
-    require(created.tzinfo is not None, "created_at: timezone is required")
+    created = parse_timestamp(record.get("created_at"), "created_at")
+    case_created = parse_timestamp(manifest.get("created_at"), "manifest.created_at")
+    require(created >= case_created, "created_at: review record must not predate the product case")
 
     artifacts = manifest["artifacts"]
     by_kind: dict[str, list[dict]] = {}
@@ -103,7 +117,7 @@ def validate_review_record(record: Any, manifest: Any, root: str | Path) -> dict
     }
     supplied = {}
     for index, item in enumerate(reviewed):
-        require(isinstance(item, dict), f"reviewed_artifacts[{index}]: must be an object")
+        exact_keys(item,{"artifact_id","sha256"},f"reviewed_artifacts[{index}]")
         ident = text_field(item.get("artifact_id"), f"reviewed_artifacts[{index}].artifact_id", 80)
         digest = text_field(item.get("sha256"), f"reviewed_artifacts[{index}].sha256", 64)
         require(ident not in supplied, f"reviewed_artifacts: duplicate artifact {ident}")
@@ -116,7 +130,7 @@ def validate_review_record(record: Any, manifest: Any, root: str | Path) -> dict
     counts = {status: 0 for status in STATUSES}
     for index, finding in enumerate(findings):
         prefix = f"findings[{index}]"
-        require(isinstance(finding, dict), f"{prefix}: must be an object")
+        exact_keys(finding,{"id","category","severity","title","basis","status","owner_label","next_action","target_date","resolution_note"},prefix)
         ident = text_field(finding.get("id"), f"{prefix}.id", 80)
         require(bool(SLUG.fullmatch(ident)), f"{prefix}.id: invalid identifier")
         require(ident not in seen, f"findings: duplicate id {ident}")
@@ -137,7 +151,7 @@ def validate_review_record(record: Any, manifest: Any, root: str | Path) -> dict
         text_field(finding.get("owner_label"), f"{prefix}.owner_label", 120)
         due = finding.get("target_date")
         if due is not None:
-            require(isinstance(due, str), f"{prefix}.target_date: must be YYYY-MM-DD or null")
+            require(isinstance(due, str) and bool(re.fullmatch(r"\\d{4}-\\d{2}-\\d{2}",due)), f"{prefix}.target_date: must be YYYY-MM-DD or null")
             try:
                 date.fromisoformat(due)
             except ValueError as exc:
