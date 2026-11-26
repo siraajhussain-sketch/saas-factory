@@ -64,7 +64,6 @@ This roadmap is a proposal. Completing a phase requires review and explicit appr
 - No database, network, provider, executor, product repository writes or spending.
 
 ## Phase 2F — Human review checklist (documented)
-
 - Added [Human Review Checklist](HUMAN_REVIEW_CHECKLIST.md) for discovery, evidence quality, architecture, cost/dependencies, security/privacy and next-phase boundaries.
 - Includes review record fields, explicit outcomes, reviewer notes, stop conditions and decision definitions.
 - Separates a completed human review from owner authorization to implement, spend, provision, use credentials or deploy.
@@ -79,13 +78,29 @@ This roadmap is a proposal. Completing a phase requires review and explicit appr
 - Standard-library tests and mandatory dry-run CLI; no network, providers, writes or spending.
 
 ## Phase 2H — Read-only review findings and remediation tracker
-
 - Versioned review record tied to one case and exact hashes of its four core artifacts.
 - Structured findings with category, severity, status, owner label, next action and optional target date.
 - Resolution notes required for claimed-resolved findings and accepted risks; these remain unverified claims.
 - Deterministic local validator reruns the case consistency checks and verifies reviewed artifact references.
 - Assistant-generated assessments remain explicitly distinct from human reviews.
 - No authenticated assignments, notifications, workflow transitions, writes, network calls, providers, spending or authorization.
+
+## Phase 2I — Independent security audit and bounded remediation (current gate)
+
+The read-only audit is recorded in [Independent Security Audit — Control Plane](INDEPENDENT_SECURITY_AUDIT_2026-11-26.md). The audit found critical approval-identity and replay/revocation gaps, plus high-severity scope, trusted-policy, audit-evidence and artifact snapshot concerns.
+
+**Required before any executor is reconsidered:**
+1. Fix artifact TOCTOU by hashing and validating the same in-memory artifact snapshot.
+2. Harden lifecycle/review schemas and validate event chronology.
+3. Bind any future approval to immutable repository revision, exact phase-plan digest and operation class.
+4. Define a trusted, integrity-protected policy configuration boundary.
+5. Design authenticated owner identity and protected asymmetric signing.
+6. Design durable approval records, atomic one-time claims, independent revocation and replay prevention.
+7. Preserve the distinction between verified evidence, human decisions and AI-generated suggestions.
+
+**Exit condition:** remediation is implemented and tested, then independently reviewed. Passing tests or a structurally valid review record do not themselves authorize execution.
+
+**Current restriction:** remain read-only. No executor, product-repository writes, paid providers, credentials, production data, provisioning, deployment or release automation.
 
 ## Deferred — Expanded multilingual benchmark (before model selection)
 
@@ -112,6 +127,7 @@ This is intentionally backlog work, not a current implementation phase. The vers
 - Provider disabled unless separately approved.
 - Bounded retries and execution time.
 - Pull request and human review.
+- **Blocked until Phase 2I exit conditions are independently satisfied and separately approved.**
 
 ## Phase 5 — Validation and operational maturity
 - Security and tenant-isolation tests.
