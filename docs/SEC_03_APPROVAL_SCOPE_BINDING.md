@@ -1,6 +1,6 @@
 # SEC-03 — Approval Scope Binding Contract
 
-**Status:** Design contract drafted; implementation and tests are pending. This document does not change the current validator or authorize execution.
+**Status:** Version-2 local validator prototype implemented; 138 standard-library tests pass in GitHub Actions run [45821136897](https://github.com/siraajhussain-sketch/saas-factory/actions/runs/45821136897). Independent security review remains pending. This is not a production approval service and does not authorize execution.
 
 ## 1. Security objective
 
@@ -142,6 +142,32 @@ SEC-03 is not remediated until:
 
 Even after SEC-03 passes, execution remains blocked by SEC-01, SEC-02, SEC-04 and SEC-05, plus independent re-audit and explicit owner approval.
 
-## 10. Current boundary
+## 10. Implementation status and limitations
 
-This is a design artifact only. No validator behavior, approval records, policy, repository permissions, workflow, product repository, credentials, provider, infrastructure, billing, production data or deployment has been changed. No execution capability is introduced.
+The version-2 local validator path is implemented in `control_plane/validator.py`, with focused regression coverage in `tests/test_approval_scope_v2.py`.
+
+Implemented and tested:
+- strict v2 manifest and approval field sets; v1 approvals are not accepted for a v2 manifest;
+- full 40-character lowercase commit SHA syntax and exact binding across manifest, phase plan and signed approval;
+- phase-plan file parsing with duplicate-key and non-finite-number rejection;
+- canonical SHA-256 digest verification for the phase plan;
+- a restricted RFC 8785-compatible canonical JSON profile that accepts strings, booleans, null, arrays, objects and safe-range integers, and deliberately rejects floats and integers outside the IEEE-754 safe range;
+- UTF-16 code-unit object-key ordering, UTF-8 encoding and canonicalization regression vectors;
+- exact operation-class registry version and read-only action allowlist; all non-read-only classes remain blocked;
+- exact path scope, case-fold collision checks, expected-output confinement and cross-field consistency;
+- HMAC signature verification over the complete v2 approval payload;
+- plan-only output explicitly marked `DECLARED_ONLY_NOT_CHECKED_OUT`.
+
+The implementation does **not**:
+- verify that the local working tree or GitHub Actions checkout actually has the declared commit SHA;
+- provide a trusted checkout verifier, authenticated approver identity, asymmetric signing, key protection or key rotation;
+- provide durable replay protection, independent revocation or atomic one-time claims;
+- establish a trusted policy configuration boundary;
+- authenticate lifecycle or review records;
+- execute any operation or permit repository writes, providers, spending, provisioning or deployment.
+
+The HMAC verifier remains a shared-secret prototype: a party holding the secret can create signatures and claim any approver label. The new schema binds more scope, but it does not resolve SEC-01 or SEC-02. SEC-03 should be considered **partially implemented, not closed**, until independent review and the trusted checkout-verification boundary are resolved.
+
+## 11. Current boundary
+
+The v2 local validator is a read-only prototype. No real approval records, product repository, policy allowlist, credentials, provider, infrastructure, billing, production data or deployment have been configured. No executor or execution capability is introduced.
