@@ -26,7 +26,7 @@ def string(value: Any, field: str, limit: int=500) -> str:
 
 def timestamp(value: Any, field: str) -> None:
     raw=string(value,field,40)
-    try: parsed=datetime.fromisoformat(raw.replace("Z","+00:00"))
+    try: parsed=datetime.fromisoformat(raw[:-1]+"+00:00" if raw.endswith("Z") else raw)
     except ValueError as exc: raise ManifestValidationError(f"{field}: must be an ISO-8601 timestamp") from exc
     require(parsed.tzinfo is not None,f"{field}: timezone is required")
 
@@ -41,8 +41,7 @@ def unique_ids(items: list, field: str) -> set[str]:
     return found
 
 def resolve_artifact(root: Path, relative: Any, ident: str) -> Path:
-    raw=string(relative,f"artifact {ident}.path",500)
-    candidate=Path(raw)
+    raw=string(relative,f"artifact {ident}.path",500); candidate=Path(raw)
     require(not candidate.is_absolute(),f"artifact {ident}: absolute paths are forbidden")
     require(".." not in candidate.parts,f"artifact {ident}: parent traversal is forbidden")
     base=root.resolve(strict=True); current=base
@@ -60,9 +59,8 @@ def validate_manifest(manifest: Any, root: str|Path) -> dict:
     require(isinstance(manifest,dict),"manifest: top-level value must be an object")
     require(manifest.get("schema_version")==SCHEMA_VERSION,"schema_version: unsupported version")
     case_id=string(manifest.get("case_id"),"case_id",80); product_id=string(manifest.get("product_id"),"product_id",80)
-    require(bool(SLUG.fullmatch(case_id)),"case_id: invalid identifier")
-    require(bool(SLUG.fullmatch(product_id)),"product_id: invalid identifier")
-    state=manifest.get("lifecycle_state"); require(state in STATES,"lifecycle_state: unsupported state")
+    require(bool(SLUG.fullmatch(case_id)),"case_id: invalid identifier"); require(bool(SLUG.fullmatch(product_id)),"product_id: invalid identifier")
+    state=manifest.get("lifecycle_state"); require(isinstance(state,str) and state in STATES,"lifecycle_state: unsupported state")
     timestamp(manifest.get("created_at"),"created_at"); timestamp(manifest.get("updated_at"),"updated_at")
     artifacts=manifest.get("artifacts"); runs=manifest.get("validator_runs"); reviews=manifest.get("human_reviews"); history=manifest.get("state_history")
     for value,field in ((artifacts,"artifacts"),(runs,"validator_runs"),(reviews,"human_reviews"),(history,"state_history")):
@@ -82,30 +80,29 @@ def validate_manifest(manifest: Any, root: str|Path) -> dict:
     unique_ids(runs,"validator_runs")
     for i,run in enumerate(runs):
         string(run.get("validator"),f"validator_runs[{i}].validator",100)
-        require(run.get("status") in VALIDATOR_STATUSES,f"validator_runs[{i}].status: unsupported status")
+        status=run.get("status"); require(isinstance(status,str) and status in VALIDATOR_STATUSES,f"validator_runs[{i}].status: unsupported status")
         timestamp(run.get("recorded_at"),f"validator_runs[{i}].recorded_at")
         refs=run.get("artifact_ids"); require(isinstance(refs,list),f"validator_runs[{i}].artifact_ids: must be an array")
+        require(all(isinstance(ref,str) for ref in refs),f"validator_runs[{i}]: artifact references must be strings")
         require(len(refs)==len(set(refs)),f"validator_runs[{i}]: duplicate artifact reference")
         require(all(ref in artifact_ids for ref in refs),f"validator_runs[{i}]: references an unknown artifact")
     unique_ids(reviews,"human_reviews")
     for i,review in enumerate(reviews):
-        string(review.get("stage"),f"human_reviews[{i}].stage",80)
-        string(review.get("reviewer_label"),f"human_reviews[{i}].reviewer_label",120)
-        require(review.get("decision") in DECISIONS,f"human_reviews[{i}].decision: unsupported decision")
-        timestamp(review.get("recorded_at"),f"human_reviews[{i}].recorded_at")
-        string(review.get("notes"),f"human_reviews[{i}].notes",2000)
+        string(review.get("stage"),f"human_reviews[{i}].stage",80); string(review.get("reviewer_label"),f"human_reviews[{i}].reviewer_label",120)
+        decision=review.get("decision"); require(isinstance(decision,str) and decision in DECISIONS,f"human_reviews[{i}].decision: unsupported decision")
+        timestamp(review.get("recorded_at"),f"human_reviews[{i}].recorded_at"); string(review.get("notes"),f"human_reviews[{i}].notes",2000)
     require(len(history)>=1,"state_history: at least the initial state is required")
     previous="INTAKE"
     for i,event in enumerate(history):
         require(isinstance(event,dict),f"state_history[{i}]: must be an object")
-        timestamp(event.get("recorded_at"),f"state_history[{i}].recorded_at")
-        string(event.get("reason"),f"state_history[{i}].reason",500)
+        timestamp(event.get("recorded_at"),f"state_history[{i}].recorded_at"); string(event.get("reason"),f"state_history[{i}].reason",500)
         source,target=event.get("from"),event.get("to")
         if i==0: require(source is None and target=="INTAKE","state_history[0]: must establish initial INTAKE state")
         else:
             require(source==previous,f"state_history[{i}]: from-state does not match previous state")
-            require(target==NEXT_STATE.get(source),f"state_history[{i}]: transition is not allowed")
-        require(target in STATES,f"state_history[{i}]: unsupported target state")
+            allowed=target=="CLOSED" and source not in {"RELEASED","CLOSED"}
+            require(allowed or (isinstance(source,str) and target==NEXT_STATE.get(source)),f"state_history[{i}]: transition is not allowed")
+        require(isinstance(target,str) and target in STATES,f"state_history[{i}]: unsupported target state")
         previous=target
     require(previous==state,"lifecycle_state: does not match state_history")
     return {"status":"STRUCTURALLY_VALID_FOR_HUMAN_REVIEW","case_id":case_id,"product_id":product_id,"lifecycle_state":state,
