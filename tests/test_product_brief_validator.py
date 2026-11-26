@@ -115,7 +115,7 @@ class ProductBriefValidatorTests(unittest.TestCase):
 
     def test_todo_blocks(self):
         with self.assertRaisesRegex(BriefValidationError, "placeholders"):
-            validate_brief(VALID_BRIEF + "\\nTODO: research competitor pricing")
+            validate_brief(VALID_BRIEF + "\nTODO: research competitor pricing")
 
     def test_empty_document_blocks(self):
         with self.assertRaisesRegex(BriefValidationError, "empty"):
