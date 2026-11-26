@@ -38,8 +38,8 @@ def make_case(root):
         "target_branch": "main",
         "phase_id": "foundation",
         "steps": [
-            {"step_id": "validate-inputs", "description": "Validate local inputs", "depends_on": [], "expected_outputs": ["tests/validation.md"]},
-            {"step_id": "summarize-scope", "description": "Produce a plan-only scope summary", "depends_on": ["validate-inputs"], "expected_outputs": ["tests/scope.md"]},
+            {"step_id": "validate-inputs", "action": "validate_inputs", "description": "Validate local inputs", "depends_on": [], "expected_outputs": ["tests/validation.md"]},
+            {"step_id": "summarize-scope", "action": "produce_plan_only_result", "description": "Produce a plan-only scope summary", "depends_on": ["validate-inputs"], "expected_outputs": ["tests/scope.md"]},
         ],
         "acceptance_criteria": ["All request fields validate", "No external side effects occur"],
         "permitted_paths": ["src/", "tests/"],
@@ -246,6 +246,37 @@ class ApprovalScopeV2Tests(unittest.TestCase):
         changed["requested_paths"] = ["src/Foo/", "src/foo/"]
         with self.assertRaisesRegex(ValidationError, "case-folding collisions"):
             self.run_plan(changed)
+
+
+    def test_approval_path_scope_tampering_rejected(self):
+        approval = self.signed()
+        approval["permitted_paths"] = ["src/", "tests/", "docs/"]
+        with self.assertRaisesRegex(ValidationError, "approval mismatch: permitted_paths"):
+            self.run_plan(approval=approval)
+
+    def test_approval_operation_registry_version_tampering_rejected(self):
+        approval = self.signed()
+        approval["operation_class_registry_version"] = "2.0"
+        with self.assertRaisesRegex(ValidationError, "approval mismatch: operation_class_registry_version"):
+            self.run_plan(approval=approval)
+
+    def test_phase_plan_step_cannot_claim_unapproved_action(self):
+        path = self.root / self.manifest["phase_plan_path"]
+        changed_plan = copy.deepcopy(self.plan)
+        changed_plan["steps"][0]["action"] = "write_repository_file"
+        self.manifest["phase_plan_sha256"] = hashlib.sha256(canonical_jcs(changed_plan)).hexdigest()
+        path.write_bytes(canonical_jcs(changed_plan))
+        with self.assertRaisesRegex(ValidationError, "step action is not allowed"):
+            self.run_plan()
+
+    def test_phase_plan_expected_output_must_be_in_permitted_scope(self):
+        path = self.root / self.manifest["phase_plan_path"]
+        changed_plan = copy.deepcopy(self.plan)
+        changed_plan["steps"][0]["expected_outputs"] = ["docs/unapproved.md"]
+        self.manifest["phase_plan_sha256"] = hashlib.sha256(canonical_jcs(changed_plan)).hexdigest()
+        path.write_bytes(canonical_jcs(changed_plan))
+        with self.assertRaisesRegex(ValidationError, "outside permitted paths"):
+            self.run_plan()
 
     def test_t17_declared_commit_is_never_reported_as_checkout_verified(self):
         result = self.run_plan()
