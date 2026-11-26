@@ -8,7 +8,7 @@ The factory is a control plane. Each product has its own architecture, ownership
 
 This repository contains governance, design documents, deterministic read-only validators and a no-network mock for the optional AI discovery boundary. It is not an autonomous build system and does not provision products, call paid AI providers, create cloud resources, handle production credentials or deploy applications.
 
-The independent control-plane security audit identified critical approval-identity and replay/revocation gaps. The SEC-06 artifact snapshot consistency issue has since been remediated and covered by passing CI (103 tests), but the remaining authorization and schema findings are open. The factory must remain read-only; implementation automation is blocked pending remediation and independent review. See the [Independent Security Audit](docs/INDEPENDENT_SECURITY_AUDIT_2026-11-26.md) and [Implementation Roadmap](docs/IMPLEMENTATION_ROADMAP.md).
+The independent control-plane security audit identified critical approval-identity and replay/revocation gaps. The SEC-06 artifact snapshot consistency and SEC-07 schema/chronology findings have since been remediated and covered by passing CI (113 tests). Critical approval identity/replay gaps and other authorization findings remain open. The factory must remain read-only; implementation automation is blocked pending remediation and independent review. See the [Independent Security Audit](docs/INDEPENDENT_SECURITY_AUDIT_2026-11-26.md) and [Implementation Roadmap](docs/IMPLEMENTATION_ROADMAP.md).
 
 ## Core principles
 
