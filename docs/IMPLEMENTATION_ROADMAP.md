@@ -90,15 +90,15 @@ This roadmap is a proposal. Completing a phase requires review and explicit appr
 The read-only audit is recorded in [Independent Security Audit — Control Plane](INDEPENDENT_SECURITY_AUDIT_2026-11-26.md). The audit found critical approval-identity and replay/revocation gaps, plus high-severity scope, trusted-policy, audit-evidence and artifact snapshot concerns.
 
 **Required before any executor is reconsidered:**
-1. Fix artifact TOCTOU by hashing and validating the same in-memory artifact snapshot.
-2. Harden lifecycle/review schemas and validate event chronology.
+1. **Completed — SEC-06 artifact snapshot consistency:** the case checker now reads each declared artifact once, hashes the captured bytes and uses those same bytes for structural validation. A regression test mutates the on-disk file between snapshot capture and manifest validation and confirms the original snapshot is consistently used. GitHub Actions passed 103 tests in run [45780074842](https://github.com/siraajhussain-sketch/saas-factory/actions/runs/45780074842).
+2. **Next — SEC-07:** harden lifecycle/review schemas and validate event chronology.
 3. Bind any future approval to immutable repository revision, exact phase-plan digest and operation class.
 4. Define a trusted, integrity-protected policy configuration boundary.
 5. Design authenticated owner identity and protected asymmetric signing.
 6. Design durable approval records, atomic one-time claims, independent revocation and replay prevention.
 7. Preserve the distinction between verified evidence, human decisions and AI-generated suggestions.
 
-**Exit condition:** remediation is implemented and tested, then independently reviewed. Passing tests or a structurally valid review record do not themselves authorize execution.
+**Exit condition:** all required remediations are implemented and tested, then independently reviewed. SEC-06 is complete but has not yet received a separate independent re-audit. Passing tests or a structurally valid review record do not themselves authorize execution.
 
 **Current restriction:** remain read-only. No executor, product-repository writes, paid providers, credentials, production data, provisioning, deployment or release automation.
 
