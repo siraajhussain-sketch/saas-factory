@@ -22,6 +22,8 @@ A version 1.0 record contains:
 - `human_review_completed: false` and `authorization_granted: false` for the assistant-generated sample.
 - A `reviewed_artifacts` list binding the assessment to the exact IDs and SHA-256 hashes of the four core artifacts.
 - A non-empty list of findings with unique IDs, category, severity, title, basis, status, owner label, next action, optional target date and optional resolution note.
+- Exact field sets at the record, reviewed-artifact and finding levels; unknown or missing fields are rejected.
+- A timezone-aware creation timestamp that cannot predate the linked product case.
 
 Supported finding categories: `discovery`, `evidence`, `architecture`, `cost`, `security_privacy`, `phase_boundary`.
 
@@ -57,7 +59,8 @@ Expected status for the committed fixture: `REVIEW_TRACKER_STRUCTURALLY_VALID_FO
 - The existing lifecycle manifest and linked product case pass their current structural checks.
 - The record identifies the same case and product.
 - The record's reviewed artifact IDs and hashes exactly match the current Product Brief, discovery report, architecture package and evidence register.
-- Finding identifiers, categories, severities, statuses, required text and date formats are structurally valid.
+- Finding identifiers, categories, severities, statuses, required text and strict `YYYY-MM-DD` date formats are structurally valid.
+- Unknown fields are rejected, and the review record's creation timestamp cannot predate the product case.
 
 ## What validation does not establish
 
