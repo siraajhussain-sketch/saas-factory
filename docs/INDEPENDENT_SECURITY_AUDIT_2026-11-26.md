@@ -55,9 +55,11 @@ This closes the identified double-read gap in the current local checker design. 
 
 ### SEC-07 — Medium: schema strictness and chronology validation are incomplete
 
-Some lifecycle/review records accept unknown fields, and lifecycle timestamps/history chronology are not fully constrained. Downstream consumers could interpret unknown fields or inconsistent chronology differently.
+**Status: remediated in the follow-up change; independent re-audit still pending.** At the audited baseline, some lifecycle/review records accepted unknown fields and timestamp/history chronology was not fully constrained.
 
-**Required remediation:** define strict versioned schemas with explicit extension policy; validate timestamp ordering, state transition chronology, duplicate/contradictory events and timezone requirements. Treat legacy records as untrusted until migrated or explicitly accepted.
+The follow-up now rejects unknown or missing fields at lifecycle manifest, artifact, validator-run, human-review, state-history, review-record, reviewed-artifact and finding levels. Lifecycle timestamps must be timezone-aware; `updated_at` cannot precede `created_at`; validator and review events must fall within the case interval; state-history events must be nondecreasing. Review records must not predate their linked product case, and target dates use a strict `YYYY-MM-DD` format. Negative tests cover these conditions. GitHub Actions run [45780592803](https://github.com/siraajhussain-sketch/saas-factory/actions/runs/45780592803) passed all 113 tests.
+
+This is strict validation for the current versioned local file contracts, not authenticated evidence or an independent certification. It has not yet received a separate independent re-audit.
 
 ### SEC-08 — Medium: AI provenance is not semantic correctness
 
@@ -80,8 +82,8 @@ These safeguards reduce current exposure, but they do not close the authorizatio
 ## Remediation order
 
 1. **SEC-06 — completed, pending independent re-audit:** snapshot each artifact once; hash and validate the same bytes; regression coverage passes.
-2. **Next: SEC-07:** strict versioned schemas and complete lifecycle chronology validation.
-3. **Strengthen approval scope (SEC-03):** immutable repository revision, phase-plan digest and operation-class binding.
+2. **SEC-07 — completed, pending independent re-audit:** strict versioned schemas and chronology checks are implemented and tested.
+3. **Next: SEC-03:** immutable repository revision, phase-plan digest and operation-class binding.
 4. **Define trusted policy boundary (SEC-04):** policy integrity, ownership, versioning and pinning.
 5. **Design authenticated identity and signing (SEC-01):** protected asymmetric signing and key lifecycle.
 6. **Design durable approval lifecycle (SEC-02):** atomic one-time claims, independent revocation, replay prevention and recovery.
@@ -98,4 +100,4 @@ The synthetic Workshop Queue case and its review tracker remain illustrative. Th
 
 **Current state:** suitable for continued read-only prototype development and bounded remediation.  
 **Not suitable for:** automated code execution, product-repository mutation, paid-provider calls, resource provisioning or release automation.  
-**Next recommended work:** complete SEC-07 lifecycle/review schema and chronology hardening, then independently re-audit the remediations while keeping the factory read-only.
+**Next recommended work:** address SEC-03 approval-scope binding, then independently re-audit the completed SEC-06/SEC-07 remediations while keeping the factory read-only.
