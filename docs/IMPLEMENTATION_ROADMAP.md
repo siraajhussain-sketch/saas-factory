@@ -33,6 +33,14 @@ This roadmap is a proposal. Completing a phase requires review and explicit appr
 - Evaluation criteria and zero-cost-first options.
 - No provider selected, credentials, calls or spending.
 
+## Phase 2B — Structured output contract and mock adapter
+- Strict, versioned JSON output contract with bounded fields and categories.
+- Exact source-document and excerpt provenance checks.
+- Model output cannot self-approve or create verified evidence.
+- Deterministic fixed-fixture adapter; no network or model inference.
+- Adversarial, malformed, oversized and provenance-failure tests.
+- No provider selected, credentials, external prompt submission, spending or product repository writes.
+
 ## Phase 3 — Isolated product repository setup
 - Explicit repository and visibility approval.
 - Approved starter and baseline security controls.
