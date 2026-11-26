@@ -14,7 +14,7 @@
 - Approval nonce format requires 64 lowercase hexadecimal characters. A future issuer must generate these from a cryptographically secure random source.
 - Expiry, future-issued, revocation-flag, nonce-format, and seven-day lifetime checks.
 - Secret redaction and fail-closed behavior.
-- Standard-library unit tests and read-only CI. The v2 scope suite covers canonicalization and tampering cases; CI run [45821136897](https://github.com/siraajhussain-sketch/saas-factory/actions/runs/45821136897) passed 138 tests.
+- Standard-library unit tests and read-only CI. The v2 scope suite covers canonicalization and tampering cases; CI run [45821430788](https://github.com/siraajhussain-sketch/saas-factory/actions/runs/45821430788) passed 142 tests.
 
 ## Deliberate limitations
 
