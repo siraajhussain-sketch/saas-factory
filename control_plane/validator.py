@@ -276,11 +276,15 @@ def validate_phase_plan_v2(plan: dict[str, Any], manifest: dict[str, Any]) -> No
     require(isinstance(steps, list) and 1 <= len(steps) <= 20, "phase plan steps must contain 1..20 entries")
     step_ids = []
     for step in steps:
-        keys(step, {"step_id", "description", "depends_on", "expected_outputs"})
+        keys(step, {"step_id", "action", "description", "depends_on", "expected_outputs"})
         require(isinstance(step["step_id"], str) and SAFE_ID.fullmatch(step["step_id"]), "invalid phase plan step_id")
+        require(step["action"] in plan["allowed_actions"], "phase plan step action is not allowed by operation class")
         require(isinstance(step["description"], str) and 1 <= len(step["description"]) <= 500, "invalid phase plan step description")
         require(isinstance(step["depends_on"], list) and all(isinstance(item, str) for item in step["depends_on"]), "invalid step dependencies")
         require(isinstance(step["expected_outputs"], list) and all(isinstance(item, str) for item in step["expected_outputs"]), "invalid expected outputs")
+        require(len(step["expected_outputs"]) == len(set(step["expected_outputs"])), "duplicate phase plan expected output")
+        output_folded = [item.casefold() for item in step["expected_outputs"]]
+        require(len(output_folded) == len(set(output_folded)), "phase plan expected outputs contain case-folding collisions")
         for output in step["expected_outputs"]:
             safe_relative_path(output)
         step_ids.append(step["step_id"])
