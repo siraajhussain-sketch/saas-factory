@@ -33,9 +33,9 @@ The current approval binds several useful scope fields, including product, repos
 
 **Status: partially implemented as a read-only v2 prototype; independent re-audit pending.** The v2 validator now binds a declared full commit SHA, canonical phase-plan digest, ADR digest, exact path set, operation class and registry version, actions, environment, provider policy and zero-spend ceiling. The phase plan is hashed using a restricted RFC 8785-compatible canonical JSON profile (safe-range integers only; floats rejected). Negative tampering tests and canonicalization tests are included. The follow-up review fixed an expected-output path-prefix boundary issue: directory scopes now use directory-prefix matching, while file scopes require exact equality. The signed v2 approval also enforces `not_before`. GitHub Actions run [45827461196](https://github.com/siraajhussain-sketch/saas-factory/actions/runs/45827461196) passed 146 tests.
 
-The local validator does **not** verify that the actual checkout HEAD equals the declared commit; it reports `DECLARED_ONLY_NOT_CHECKED_OUT`. A trusted checkout verifier remains required. HMAC remains a shared-secret prototype, and SEC-01/SEC-02/SEC-04 remain open. This finding is not closed and the prototype is not executable authorization.
+The local validator does **not** verify that the actual checkout HEAD equals the declared commit; it reports `DECLARED_ONLY_NOT_CHECKED_OUT`. A design-only proposal now defines a separately trusted verifier and policy boundary, but neither is implemented. HMAC remains a shared-secret prototype, and SEC-01/SEC-02/SEC-04 remain open. This finding is not closed and the prototype is not executable authorization.
 
-**Required before execution:** independently review the v2 schema and canonicalization; implement a separately trusted checkout-revision verifier; bind a protected policy version; and resolve the authenticated identity, signing, replay and atomic-claim gaps.
+**Required before execution:** independently review the v2 schema and canonicalization; implement and independently test the separately trusted checkout-revision verifier and policy boundary; and resolve the authenticated identity, signing, replay and atomic-claim gaps. See [Trusted Checkout and Policy Boundary Design](TRUSTED_CHECKOUT_AND_POLICY_BOUNDARY_DESIGN.md).
 
 ### SEC-04 — High: trusted policy configuration boundary is undefined
 
@@ -88,7 +88,7 @@ These safeguards reduce current exposure, but they do not close the authorizatio
 1. **SEC-06 — completed, pending independent re-audit:** snapshot each artifact once; hash and validate the same bytes; regression coverage passes.
 2. **SEC-07 — completed, pending independent re-audit:** strict versioned schemas and chronology checks are implemented and tested.
 3. **SEC-03 partially implemented; independent re-audit pending:** v2 manifest/approval validation binds declared commit SHA, canonical phase-plan digest, operation class/registry version, exact actions and paths. CI run [45827461196](https://github.com/siraajhussain-sketch/saas-factory/actions/runs/45827461196) passed 146 tests, including exact-file path-scope and not-before regression cases. Actual checkout identity remains unverified; HMAC identity and replay/ledger gaps remain. See [SEC-03 Approval Scope Binding Contract](SEC_03_APPROVAL_SCOPE_BINDING.md).
-4. **Define trusted policy boundary (SEC-04):** policy integrity, ownership, versioning and pinning.
+4. **SEC-04 design completed only:** a design proposal defines policy ownership, immutable version pinning and integrity verification; implementation and independent review remain outstanding.
 5. **Design authenticated identity and signing (SEC-01):** protected asymmetric signing and key lifecycle.
 6. **Design durable approval lifecycle (SEC-02):** atomic one-time claims, independent revocation, replay prevention and recovery.
 7. **Improve audit evidence (SEC-05) and AI review boundaries (SEC-08).**
@@ -104,4 +104,4 @@ The synthetic Workshop Queue case and its review tracker remain illustrative. Th
 
 **Current state:** suitable for continued read-only prototype development and bounded remediation.  
 **Not suitable for:** automated code execution, product-repository mutation, paid-provider calls, resource provisioning or release automation.  
-**Next recommended work:** independently re-audit SEC-03 plus the SEC-06/SEC-07 remediations, then design a trusted checkout-revision verifier and SEC-04 policy-integrity boundary. Keep the factory read-only throughout.
+**Next recommended work:** independently re-audit SEC-03 plus the SEC-06/SEC-07 remediations, then evaluate and independently review the design-only trusted checkout verifier and SEC-04 policy-integrity proposal. Keep the factory read-only throughout.
