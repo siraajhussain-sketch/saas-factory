@@ -6,7 +6,7 @@ The factory is a control plane. Each product has its own architecture, ownership
 
 ## Current status
 
-This repository contains governance, design documents and a deterministic read-only validator. It is not an autonomous build system and does not provision products, call paid AI providers, create cloud resources, handle production credentials or deploy applications.
+This repository contains governance, design documents, a deterministic read-only validator and a read-only Phase 2 package completeness checker. It is not an autonomous build system and does not provision products, call paid AI providers, create cloud resources, handle production credentials or deploy applications.
 
 ## Core principles
 
@@ -37,6 +37,7 @@ This repository contains governance, design documents and a deterministic read-o
 - [Phase 1 deterministic validator](docs/PHASE_1_CONTROL_PLANE.md)
 - [Phase 1.1 strict input hardening](docs/PHASE_1_1_STRICT_INPUT_HARDENING.md)
 - [Phase 2 discovery and architecture package](docs/PHASE_2_READ_ONLY_DISCOVERY.md)
+- [Phase 2 package validator](docs/PHASE_2_PACKAGE_VALIDATOR.md)
 
 ## Important limitations
 
@@ -45,3 +46,10 @@ Documentation and passing tests do not establish production readiness. Each prod
 ## Repository boundaries
 
 Do not place customer data, secrets, provider credentials or confidential product specifications in this public repository. Use a private product repository for sensitive material.
+
+
+## Phase 2 package validator
+
+The local deterministic validator checks the structure of discovery, architecture and evidence documents. It uses only the Python standard library and never writes files or invokes providers.
+
+See [Phase 2 validator](docs/PHASE_2_PACKAGE_VALIDATOR.md) for usage and limitations.
