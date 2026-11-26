@@ -1,0 +1,103 @@
+{
+  "schema_version": "1.0",
+  "assessment_type": "assistant_preliminary_desk_review",
+  "human_review_completed": false,
+  "authorization_granted": false,
+  "case_id": "workshop-queue-demo-001",
+  "product_id": "workshop-queue-demo",
+  "created_at": "2026-11-26T12:00:00+05:00",
+  "summary": "Preliminary assistant desk review of a fictional product case. The documents are structurally useful, but the opportunity and architecture are not validated for implementation.",
+  "recommendation": "do_not_proceed",
+  "reviewed_artifacts": [
+    {
+      "artifact_id": "workshop-queue-brief-v1",
+      "sha256": "d28879d30c3f261145ff9e791e56c627a61ad4d9ca831eac043f546bdc0f7cc0"
+    },
+    {
+      "artifact_id": "workshop-queue-discovery-v1",
+      "sha256": "ea774472dfafde5e6318808a3f61249048e1f94b0c73eea6e915702149dee0d0"
+    },
+    {
+      "artifact_id": "workshop-queue-architecture-v1",
+      "sha256": "9b88f07e0d27cf31f6bb532bb0bb0697feee1401c2a9d25c6651f0f771a181c3"
+    },
+    {
+      "artifact_id": "workshop-queue-evidence-v1",
+      "sha256": "fb4d46b297ff1cfd77cd5eb1bf56a88a8725bc60464c510b507df4d84f804e28"
+    }
+  ],
+  "findings": [
+    {
+      "id": "market-validation",
+      "category": "discovery",
+      "severity": "high",
+      "title": "Buyer problem and demand are unvalidated",
+      "basis": "No workshop-owner interviews, workflow observations, demand evidence or willingness-to-pay evidence exist in this synthetic case.",
+      "status": "open",
+      "owner_label": "Unassigned (synthetic example)",
+      "next_action": "For a real product, select a target market and conduct documented buyer interviews and workflow observations before making a build decision.",
+      "target_date": null,
+      "resolution_note": null
+    },
+    {
+      "id": "market-and-competitor-evidence",
+      "category": "evidence",
+      "severity": "high",
+      "title": "Geography and competitive alternatives are not researched",
+      "basis": "The country and city are unspecified; paper, spreadsheets and messaging apps are scenario assumptions rather than researched alternatives.",
+      "status": "open",
+      "owner_label": "Unassigned (synthetic example)",
+      "next_action": "Choose a target geography, research current alternatives and competitors, and record dated sources with limitations.",
+      "target_date": null,
+      "resolution_note": null
+    },
+    {
+      "id": "jurisdiction-and-privacy",
+      "category": "security_privacy",
+      "severity": "critical",
+      "title": "Jurisdiction-specific privacy obligations are unknown",
+      "basis": "Customer contact and vehicle identifiers may be personal data, but no country, legal review, retention policy or data-residency decision exists.",
+      "status": "open",
+      "owner_label": "Unassigned (synthetic example)",
+      "next_action": "Select the intended jurisdiction and obtain qualified privacy/compliance review before using real customer data.",
+      "target_date": null,
+      "resolution_note": null
+    },
+    {
+      "id": "ownership-and-role-decisions",
+      "category": "architecture",
+      "severity": "high",
+      "title": "Ownership cardinality and permissions remain hypotheses",
+      "basis": "Multi-workshop membership and role boundaries are proposed but not validated; no executable authorization contract or tests exist.",
+      "status": "open",
+      "owner_label": "Unassigned (synthetic example)",
+      "next_action": "Validate the operating model, define a complete role-permission matrix and specify negative cross-workshop access tests.",
+      "target_date": null,
+      "resolution_note": null
+    },
+    {
+      "id": "operating-cost-model",
+      "category": "cost",
+      "severity": "medium",
+      "title": "Real operating cost and free-tier feasibility are unknown",
+      "basis": "No vendor, hosting, database, backup, monitoring or usage scenario has been selected or costed.",
+      "status": "open",
+      "owner_label": "Unassigned (synthetic example)",
+      "next_action": "Compare no-cost and low-cost options using current official limits, realistic usage scenarios and migration/exit costs.",
+      "target_date": null,
+      "resolution_note": null
+    },
+    {
+      "id": "implementation-boundary",
+      "category": "phase_boundary",
+      "severity": "high",
+      "title": "No bounded implementation phase is justified yet",
+      "basis": "The discovery, jurisdiction, privacy, ownership and cost questions remain open; no implementation scope or owner approval exists.",
+      "status": "blocked",
+      "owner_label": "Unassigned (synthetic example)",
+      "next_action": "Keep implementation blocked until critical evidence and architecture decisions are resolved and the owner separately approves an exact bounded phase.",
+      "target_date": null,
+      "resolution_note": null
+    }
+  ]
+}
