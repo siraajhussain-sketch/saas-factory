@@ -47,6 +47,12 @@ class AIOutputContractTests(unittest.TestCase):
         with self.assertRaisesRegex(AIOutputValidationError, "exactly the defined fields"):
             parse_and_validate_output(json.dumps(changed), SOURCE)
 
+    def test_non_string_category_rejected(self):
+        changed = json.loads(json.dumps(VALID))
+        changed["findings"][0]["category"] = {"unexpected": "object"}
+        with self.assertRaisesRegex(AIOutputValidationError, "unsupported"):
+            parse_and_validate_output(json.dumps(changed), SOURCE)
+
     def test_unsupported_category_rejected(self):
         changed = json.loads(json.dumps(VALID))
         changed["findings"][0]["category"] = "verified_fact"
