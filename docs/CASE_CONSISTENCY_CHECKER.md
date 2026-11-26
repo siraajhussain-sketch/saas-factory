@@ -24,7 +24,7 @@ The manifest must contain exactly one artifact of each kind:
 - `architecture_package`
 - `evidence_register`
 
-Every artifact declared in the manifest is first checked by the lifecycle manifest validator for root confinement, regular-file status and SHA-256 integrity. The checker then reruns the Product Brief structural validator and the Phase 2 discovery/architecture/evidence structural validator on the four required artifacts.
+Every artifact declared in the manifest is captured once as an in-memory byte snapshot after root-confinement and regular-file checks. The lifecycle manifest validator verifies SHA-256 against those snapshots, and the checker decodes and reruns the Product Brief and Phase 2 structural validators against the exact same snapshot bytes. It does not reopen the files for downstream validation. This avoids a time-of-check/time-of-use gap where a file could change between hash verification and content validation.
 
 Additional artifact kinds may be present, and their paths and hashes are still checked by the manifest validator.
 
@@ -34,7 +34,7 @@ Additional artifact kinds may be present, and their paths and hashes are still c
 
 - The lifecycle manifest passes its structural and integrity checks.
 - The four required artifact kinds are present exactly once.
-- The required artifacts are linked by one manifest and their hashes match.
+- The required artifacts are linked by one manifest and their hashes match the exact byte snapshots used for structural validation.
 - The Product Brief and Phase 2 package pass their existing structural checks.
 
 This is a readiness signal for human review only. It is not a finding that the documents describe the same real-world product, that their claims are true, or that the design is safe or viable.
@@ -52,6 +52,10 @@ Reviewer labels, review decisions and lifecycle state are also unverified data. 
 - No credentials or production data are accessed.
 - No spend; the command requires `--dry-run`.
 - A passing result explicitly reports `authorization_granted: false`.
+
+## Artifact snapshot consistency
+
+The checker reads each declared artifact once into memory, hashes those bytes and passes the same bytes to the content validators. A later on-disk change does not silently substitute different content into the same validation run. The path is still checked for confinement and symlinks; this is a local read-only consistency measure, not a substitute for operating-system isolation against a fully privileged attacker.
 
 ## Limitations and next improvements
 
