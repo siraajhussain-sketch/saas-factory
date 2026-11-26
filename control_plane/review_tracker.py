@@ -151,7 +151,7 @@ def validate_review_record(record: Any, manifest: Any, root: str | Path) -> dict
         text_field(finding.get("owner_label"), f"{prefix}.owner_label", 120)
         due = finding.get("target_date")
         if due is not None:
-            require(isinstance(due, str) and bool(re.fullmatch(r"\\d{4}-\\d{2}-\\d{2}",due)), f"{prefix}.target_date: must be YYYY-MM-DD or null")
+            require(isinstance(due, str) and bool(re.fullmatch(r"\d{4}-\d{2}-\d{2}",due)), f"{prefix}.target_date: must be YYYY-MM-DD or null")
             try:
                 date.fromisoformat(due)
             except ValueError as exc:
