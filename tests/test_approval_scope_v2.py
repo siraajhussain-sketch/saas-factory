@@ -98,6 +98,7 @@ def make_approval(manifest, **changes):
         "currency": "USD",
         "approver": "owner",
         "issued_at": "2026-11-25T11:00:00Z",
+        "not_before": "2026-11-25T11:00:00Z",
         "expires_at": "2026-11-26T11:00:00Z",
         "revoked": False,
         "nonce": "b" * 64,
@@ -247,6 +248,40 @@ class ApprovalScopeV2Tests(unittest.TestCase):
         with self.assertRaisesRegex(ValidationError, "case-folding collisions"):
             self.run_plan(changed)
 
+
+    def test_phase_plan_expected_output_cannot_use_file_name_prefix_sibling(self):
+        path = self.root / self.manifest["phase_plan_path"]
+        changed_manifest = copy.deepcopy(self.manifest)
+        changed_plan = copy.deepcopy(self.plan)
+        changed_manifest["requested_paths"] = ["src/report.py"]
+        changed_plan["permitted_paths"] = ["src/report.py"]
+        changed_plan["steps"][0]["expected_outputs"] = ["src/report.py.backup"]
+        changed_manifest["phase_plan_sha256"] = hashlib.sha256(canonical_jcs(changed_plan)).hexdigest()
+        path.write_bytes(canonical_jcs(changed_plan))
+        with self.assertRaisesRegex(ValidationError, "outside permitted paths"):
+            self.run_plan(changed_manifest)
+
+    def test_phase_plan_expected_output_may_match_an_exact_file_scope(self):
+        path = self.root / self.manifest["phase_plan_path"]
+        changed_manifest = copy.deepcopy(self.manifest)
+        changed_plan = copy.deepcopy(self.plan)
+        changed_manifest["requested_paths"] = ["src/report.py", "tests/"]
+        changed_plan["permitted_paths"] = ["src/report.py", "tests/"]
+        changed_plan["steps"][0]["expected_outputs"] = ["src/report.py"]
+        changed_manifest["phase_plan_sha256"] = hashlib.sha256(canonical_jcs(changed_plan)).hexdigest()
+        path.write_bytes(canonical_jcs(changed_plan))
+        result = self.run_plan(changed_manifest)
+        self.assertEqual(result["status"], "PLAN_ONLY_APPROVAL_VALIDATED")
+
+    def test_approval_not_before_cannot_be_in_the_future(self):
+        approval = make_approval(self.manifest, not_before="2026-11-26T13:00:00Z")
+        with self.assertRaisesRegex(ValidationError, "not yet valid"):
+            self.run_plan(approval=approval)
+
+    def test_approval_not_before_cannot_precede_issue_time(self):
+        approval = make_approval(self.manifest, not_before="2026-11-25T10:59:59Z")
+        with self.assertRaisesRegex(ValidationError, "cannot precede"):
+            self.run_plan(approval=approval)
 
     def test_approval_path_scope_tampering_rejected(self):
         approval = self.signed()
