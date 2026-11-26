@@ -1,9 +1,11 @@
 import hashlib
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 from control_plane.case_consistency import CaseConsistencyError, validate_case
+from control_plane.lifecycle_manifest import validate_manifest as validate_manifest_real
 
 
 BRIEF = """# Product Brief
@@ -177,6 +179,34 @@ class CaseConsistencyTests(unittest.TestCase):
         self.manifest["artifacts"][0]["sha256"] = "0" * 64
         with self.assertRaisesRegex(ValueError, "SHA-256 mismatch"):
             validate_case(self.manifest, self.root)
+
+    def test_same_snapshot_is_hashed_and_validated_if_file_changes_after_capture(self):
+        brief_path = self.root / self.documents["product_brief"][0]
+
+        def mutate_after_snapshot(manifest, root, *, artifact_snapshots):
+            # Simulate a concurrent writer after the checker has captured bytes.
+            brief_path.write_text("# Tampered after snapshot", encoding="utf-8")
+            return validate_manifest_real(
+                manifest, root, artifact_snapshots=artifact_snapshots
+            )
+
+        with patch(
+            "control_plane.case_consistency.validate_manifest",
+            side_effect=mutate_after_snapshot,
+        ):
+            result = validate_case(self.manifest, self.root)
+
+        # The validated bytes are the original, hash-matched snapshot, not the
+        # changed on-disk file. A second read would incorrectly reject this case.
+        self.assertEqual(result["status"], "CASE_PACKAGE_READY_FOR_HUMAN_REVIEW")
+        self.assertEqual(
+            brief_path.read_text(encoding="utf-8"), "# Tampered after snapshot"
+        )
+        self.assertEqual(
+            result["checks"]["artifact_snapshot_reuse"],
+            "same_bytes_hashed_and_structurally_validated",
+        )
+        self.assertFalse(result["authorization_granted"])
 
     def test_validator_run_records_are_not_authorization(self):
         self.manifest["validator_runs"] = [{
