@@ -34,6 +34,7 @@ This repository contains governance, design documents, deterministic read-only v
 - [Lifecycle manifest and state contract](docs/LIFECYCLE_MANIFEST.md)
 - [Product case consistency checker](docs/CASE_CONSISTENCY_CHECKER.md)
 - [Synthetic end-to-end product case walkthrough](docs/SYNTHETIC_END_TO_END_WALKTHROUGH.md)
+- [Human review checklist](docs/HUMAN_REVIEW_CHECKLIST.md)
 - [Approval gates](docs/APPROVAL_GATES.md)
 - [Approval service design](docs/APPROVAL_SERVICE_DESIGN.md)
 - [Approval infrastructure options](docs/APPROVAL_INFRASTRUCTURE_OPTIONS.md)
