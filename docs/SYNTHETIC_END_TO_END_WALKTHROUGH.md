@@ -89,6 +89,20 @@ A human reviewer should not accept the synthetic package as product evidence. In
 
 A realistic next step for an actual product would be to replace the fictional brief with owner-supplied facts, research current sources, record real interviews only if conducted, and then have reviewers assess the evidence and architecture.
 
+### 6. Preliminary review findings and remediation tracking
+
+```bash
+python -m control_plane.review_tracker \
+  --record examples/lifecycle/workshop-queue/review-tracker.json \
+  --manifest examples/lifecycle/sample-case.json \
+  --root examples/lifecycle \
+  --dry-run
+```
+
+Expected status: `REVIEW_TRACKER_STRUCTURALLY_VALID_FOR_FOLLOW_UP`.
+
+The committed record is an assistant-generated preliminary desk assessment, not a human review. It binds itself to the exact hashes of the four core case artifacts and lists six illustrative findings. It does not add a human review to the lifecycle manifest, close findings, authenticate an owner or authorize work. Claimed remediation remains unverified.
+
 ## Editing the fixture safely
 
 If any referenced artifact changes, update its SHA-256 value in `sample-case.json`. A hash mismatch must block the combined check. Do not manually mark the lifecycle as approved to make a check pass; lifecycle states and review records are untrusted descriptive data.
