@@ -36,6 +36,7 @@ No product implementation is authorized by the presence of these documents.
 - [Approval service design](docs/APPROVAL_SERVICE_DESIGN.md)
 - [Approval control-plane threat model](docs/APPROVAL_CONTROL_PLANE_THREAT_MODEL.md)
 - [Approval infrastructure options](docs/APPROVAL_INFRASTRUCTURE_OPTIONS.md)
+- [Current zero-cost feasibility decision](docs/APPROVAL_ZERO_COST_FEASIBILITY_2026-11.md)
 - [Phase 1 deterministic validator](docs/PHASE_1_CONTROL_PLANE.md)
 - [Phase 1 validator security gap review](docs/PHASE_1_SECURITY_GAP_REVIEW.md)
 - [Phase 1.1 strict input hardening](docs/PHASE_1_1_STRICT_INPUT_HARDENING.md)
