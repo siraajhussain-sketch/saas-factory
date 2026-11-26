@@ -63,11 +63,12 @@ This roadmap is a proposal. Completing a phase requires review and explicit appr
 - Standard-library tests and mandatory dry-run CLI.
 - No database, network, provider, executor, product repository writes or spending.
 
-## Phase 2F — Human review checklist
-- Structured human review for discovery, evidence quality, architecture, cost/dependencies and security/privacy.
-- Explicit PASS / FAIL / N/A outcomes, reviewer notes and bounded next-phase decision.
-- Clear separation between review completion and authorization to implement, spend or deploy.
-- Review checklist is guidance, not certification or machine-enforceable approval.
+## Phase 2F — Human review checklist (documented)
+
+- Added [Human Review Checklist](HUMAN_REVIEW_CHECKLIST.md) for discovery, evidence quality, architecture, cost/dependencies, security/privacy and next-phase boundaries.
+- Includes review record fields, explicit outcomes, reviewer notes, stop conditions and decision definitions.
+- Separates a completed human review from owner authorization to implement, spend, provision, use credentials or deploy.
+- The checklist is guidance only; it does not authenticate reviewers, certify security or create machine-enforceable approval.
 
 ## Phase 2G — Read-only product case consistency checker
 - Require exactly one Product Brief, discovery report, architecture package and evidence register in a single lifecycle manifest.
